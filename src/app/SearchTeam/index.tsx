@@ -7,12 +7,15 @@ import {
   StyleSheet,
   Alert,
   ActivityIndicator,
-  Button,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView
 } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList, Team } from '..';
 import { Ionicons } from '@expo/vector-icons'
-import { CameraView, useCameraPermissions } from 'expo-camera';
+import { Camera } from '@/src/components/Camera';
+
 
 
 type SearchTeamNavigationProp = NativeStackNavigationProp<RootStackParamList, 'SearchTeam'>;
@@ -21,17 +24,6 @@ interface Props {
   navigation: SearchTeamNavigationProp;
 }
 
-export default function SearchTeamScreen({ navigation }: Props) {
-  const [teamCode, setTeamCode] = useState('');
-  const [isSearching, setIsSearching] = useState(false);
-  const [showScanner, setShowScanner] = useState(false);
-  const [permission, requestPermission] = useCameraPermissions();
-
-  if (!permission) {
-    // Camera permissions are still loading.
-    return <View />;
-  }
-
   // Mock data - substituir por API real
   const mockTeams: Team[] = [
     { id: '1', name: 'Pescadores Unidos', code: 'PU001' },
@@ -39,6 +31,11 @@ export default function SearchTeamScreen({ navigation }: Props) {
     { id: '3', name: 'Maré Alta', code: 'MA003' },
     { id: '4', name: 'Iscas & Companhia', code: 'IC004' },
   ];
+
+export default function SearchTeamScreen({ navigation }: Props) {
+  const [teamCode, setTeamCode] = useState('');
+  const [isSearching, setIsSearching] = useState(false);
+  const [showScanner, setShowScanner] = useState(false);
 
   const handleSearch = async () => {
     if (!teamCode.trim()) {
@@ -68,21 +65,9 @@ export default function SearchTeamScreen({ navigation }: Props) {
     }
   };
 
-  const requestCameraPermission = async () => {
-    if (!permission.granted) {
-        // Camera permissions are not granted yet.
-        return (
-          <View style={styles.container}>
-            <Text style={styles.message}>We need your permission to show the camera</Text>
-            <Button onPress={requestPermission} title="grant permission" />
-          </View>
-        );
-      }
-    setShowScanner(true);
-  };
 
 
-  const handleBarCodeScanned = ({ type, data }: { type: string; data: string }) => {
+  const handleBarCodeScanned = ( type: string, data: string ) => {
     setShowScanner(false);
     setTeamCode(data);
     
@@ -98,42 +83,19 @@ export default function SearchTeamScreen({ navigation }: Props) {
     }
   };
 
-  if (showScanner) {
-    return (
-      <View style={styles.scannerContainer}>
-        <CameraView
-                style={StyleSheet.absoluteFillObject}
-                facing="back"
-                barcodeScannerSettings={
-                    {
-                        barcodeTypes: ['qr']
-                    }
-                }
-
-                onBarcodeScanned={
-                    ({type, data }) => {
-                        console.log( type, data); // here you can get your barcode id or url
-                        handleBarCodeScanned({type, data})
-                    }
-                }
-            />
-        <View style={styles.scannerOverlay}>
-          <View style={styles.scannerFrame} />
-          <Text style={styles.scannerText}>Posicione o QR Code dentro do quadro</Text>
-          <TouchableOpacity 
-            style={styles.cancelButton}
-            onPress={() => setShowScanner(false)}
-          >
-            <Text style={styles.cancelButtonText}>Cancelar</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-    );
-  }
 
   return (
     <View style={styles.container}>
       <View style={styles.content}>
+        <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        style={styles.keyboardView}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 64 : 0}
+      >
+        <ScrollView
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+        >
         <View style={styles.header}>
           <Ionicons name="search" size={60} color="#2563eb" />
           <Text style={styles.title}>Buscar Time</Text>
@@ -176,13 +138,17 @@ export default function SearchTeamScreen({ navigation }: Props) {
 
           <TouchableOpacity 
             style={styles.qrButton}
-            onPress={requestCameraPermission}
+            onPress={()=>setShowScanner(true)}
           >
             <Ionicons name="qr-code" size={20} color="#2563eb" style={styles.buttonIcon} />
             <Text style={styles.qrButtonText}>Ler QR Code</Text>
           </TouchableOpacity>
         </View>
+        </ScrollView>
+        </KeyboardAvoidingView>
       </View>
+      {showScanner &&
+      <Camera type='qrcode' onMediaCaptured={handleBarCodeScanned} onClose={()=>setShowScanner(false)} />}
     </View>
   );
 }
@@ -195,6 +161,14 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
     paddingHorizontal: 20,
+    paddingTop: 40,
+  },
+  keyboardView: {
+    flex: 1,
+  },
+  scrollContent: {
+    flexGrow: 1,
+    paddingHorizontal: 24,
     paddingTop: 40,
   },
   header: {
@@ -296,43 +270,5 @@ const styles = StyleSheet.create({
     color: '#2563eb',
     fontSize: 16,
     fontWeight: 'bold',
-  },
-  scannerContainer: {
-    flex: 1,
-  },
-  scannerOverlay: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgba(0,0,0,0.5)',
-  },
-  scannerFrame: {
-    width: 250,
-    height: 250,
-    borderWidth: 2,
-    borderColor: '#fff',
-    backgroundColor: 'transparent',
-  },
-  scannerText: {
-    color: '#fff',
-    fontSize: 16,
-    marginTop: 20,
-    textAlign: 'center',
-  },
-  cancelButton: {
-    backgroundColor: '#ef4444',
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    borderRadius: 8,
-    marginTop: 30,
-  },
-  cancelButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  message: {
-    textAlign: 'center',
-    paddingBottom: 10,
   },
 });
