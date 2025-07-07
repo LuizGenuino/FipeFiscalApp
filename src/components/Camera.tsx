@@ -1,7 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
-import { CameraView, useCameraPermissions } from "expo-camera";
-import { use, useEffect, useState } from "react";
-import { Alert, Button, Keyboard, StyleSheet, Text, TouchableOpacity } from "react-native";
+import { CameraView, useCameraPermissions, CameraRecordingOptions } from "expo-camera";
+import { useEffect, useRef, useState } from "react";
+import { Keyboard, StyleSheet, Text, TouchableOpacity } from "react-native";
 import { View } from "react-native";
 import { CameraPermissionModal } from "./CameraPermissionModal";
 
@@ -11,21 +11,26 @@ interface CameraComponentProps {
     onClose: () => void;
 }
 
+const recordingOptions: CameraRecordingOptions = {
+    maxDuration: 30, // Máximo 60 segundos
+};
+
+
 export function Camera({ type, onMediaCaptured, onClose }: CameraComponentProps) {
     const [camera, setCamera] = useState<any | null>(null);
     const [isRecording, setIsRecording] = useState(false);
     const [permission, requestPermission] = useCameraPermissions();
+    const [recordingTime, setRecordingTime] = useState(0);
+
+
+    const intervalRef = useRef<any>(null);
 
     useEffect(() => {
         Keyboard.dismiss();
+        if (intervalRef.current) {
+            clearInterval(intervalRef.current);
+        }
     }, []);
-
-
-    function alert() {
-        Alert.alert(
-            permission ? 'Camera permission granted' : 'Camera permission denied', `${type}`)
-    }
-
 
     const takePicture = async () => {
         if (camera) {
@@ -37,11 +42,26 @@ export function Camera({ type, onMediaCaptured, onClose }: CameraComponentProps)
     const recordVideo = async () => {
         if (camera && !isRecording) {
             setIsRecording(true);
-            const video = await camera.recordAsync();
-            setIsRecording(false);
+
+            setRecordingTime(0);
+
+            // Inicia o cronômetro
+            intervalRef.current = setInterval(() => {
+                setRecordingTime((prev) => prev + 1);
+            }, 1000);
+
+            const video = await camera.recordAsync(recordingOptions);
             onMediaCaptured(type, video);
+            setIsRecording(false);
+
+
         } else if (camera && isRecording) {
             camera.stopRecording();
+        }
+
+        if (intervalRef.current) {
+            clearInterval(intervalRef.current);
+            intervalRef.current = null;
         }
     };
 
@@ -53,7 +73,6 @@ export function Camera({ type, onMediaCaptured, onClose }: CameraComponentProps)
                     ref={(ref: any) => setCamera(ref)}
                     facing={"back"}
                     mode={type === 'video' ? 'video' : 'picture'}
-                    active={true}
                     barcodeScannerSettings={type === 'qrcode' ? { barcodeTypes: ['qr'] } : undefined}
                     onBarcodeScanned={type === 'qrcode' ? ({ type, data }) => {
                         onMediaCaptured(type, data); // Handle QR code scan
@@ -76,6 +95,15 @@ export function Camera({ type, onMediaCaptured, onClose }: CameraComponentProps)
                             <TouchableOpacity style={styles.closeButton} onPress={onClose}>
                                 <Ionicons name="close" size={30} color="#fff" />
                             </TouchableOpacity>
+                            {/* Timer */}
+                            {isRecording && (
+                                <View style={styles.timerContainer}>
+                                    <Text style={styles.timerText}>
+                                        {Math.floor(recordingTime / 60)}:
+                                        {String(recordingTime % 60).padStart(2, '0')}
+                                    </Text>
+                                </View>
+                            )}
 
                             <View style={styles.cameraControls}>
                                 <TouchableOpacity
@@ -110,24 +138,46 @@ const styles = StyleSheet.create({
         left: 0,
         right: 0,
         bottom: 0,
+        zIndex: 9999,
         backgroundColor: '#000',
-        zIndex: 1000,
+        flex: 1,
     },
     camera: {
         flex: 1,
+        width: '100%',
+        height: '100%',
     },
     cameraOverlay: {
-        flex: 1,
-        backgroundColor: 'transparent',
-        justifyContent: 'space-between',
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        justifyContent: 'flex-end',
     },
     closeButton: {
         position: 'absolute',
-        top: 50,
+        top: 40,
         right: 20,
         backgroundColor: 'rgba(0,0,0,0.5)',
         borderRadius: 20,
         padding: 8,
+        zIndex: 10,
+    },
+    timerContainer: {
+        position: 'absolute',
+        top: 50,
+        alignSelf: 'center',
+        backgroundColor: 'rgba(243, 5, 5, 0.83)',
+        paddingHorizontal: 16,
+        paddingVertical: 6,
+        borderRadius: 15,
+        zIndex: 10,
+    },
+    timerText: {
+        color: '#fff',
+        fontSize: 16,
+        fontWeight: 'bold',
     },
     cameraControls: {
         alignItems: 'center',

@@ -1,7 +1,16 @@
 import { Ionicons } from "@expo/vector-icons";
-import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import {
+    Alert,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
+    Image,
+} from "react-native";
+import { Video } from "expo-av";
 import { FishRecord } from "../app";
 import { useState } from "react";
+import { Camera } from "./Camera";
 
 interface ScoreFormProps {
     fishRecord: FishRecord;
@@ -14,91 +23,116 @@ export function RegisterCapture({ fishRecord, setFishRecord }: ScoreFormProps) {
     const [cameraType, setCameraType] = useState<'photo' | 'video'>('photo');
     const [photoType, setPhotoType] = useState<'fish' | 'ticket'>('fish');
 
-    const handleTakePhoto = async (type: 'fish' | 'ticket') => {
-
+    const handleTakePhoto = (type: 'fish' | 'ticket') => {
         setPhotoType(type);
         setCameraType('photo');
         setShowCamera(true);
     };
 
-
-
-
-
-    const handleRecordVideo = async () => {
+    const handleRecordVideo = () => {
         setCameraType('video');
         setShowCamera(true);
     };
 
-    const handleMediaCaptured = (uri: string) => {
+    const handleMediaCaptured = (type: string, data: any) => {
         setShowCamera(false);
+        if (!data || !data.uri) {
+            Alert.alert('Erro', 'Não foi possível capturar a mídia. Tente novamente.');
+            return;
+        }
 
-        if (cameraType === 'photo') {
+        if (type === 'photo') {
             if (photoType === 'fish') {
-                setFishRecord((prev: FishRecord) => ({ ...prev, fishPhoto: uri }));
+                setFishRecord((prev) => ({ ...prev, fishPhoto: data.uri }));
             } else {
-                setFishRecord((prev: FishRecord) => ({ ...prev, ticketPhoto: uri }));
+                setFishRecord((prev) => ({ ...prev, ticketPhoto: data.uri }));
             }
         } else {
-            setFishRecord((prev: FishRecord) => ({ ...prev, releaseVideo: uri }));
+            setFishRecord((prev) => ({ ...prev, releaseVideo: data.uri }));
         }
     };
 
-    return (
+    const renderMediaSection = (label: string, mediaUri: string | undefined, onCapture: () => void, onRemove: () => void, isVideo = false) => (
         <View style={styles.card}>
             <View style={styles.cardHeader}>
-                <Ionicons name="camera" size={24} color="#2563eb" />
-                <Text style={styles.cardTitle}>Fotos</Text>
+                <Ionicons name={isVideo ? "videocam" : "camera"} size={24} color="#2563eb" />
+                <Text style={styles.cardTitle}>{label}</Text>
             </View>
             <View style={styles.cardContent}>
-                <TouchableOpacity
-                    style={styles.mediaButton}
-                    onPress={() => handleTakePhoto('fish')}
-                >
-                    <Ionicons name="camera-sharp" size={20} color="#2563eb" />
-                    <Text style={styles.mediaButtonText}>
-                        {fishRecord.fishPhoto ? 'Foto do Peixe ✓' : 'Foto do Peixe Completo'}
-                    </Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity
-                    style={styles.mediaButton}
-                    onPress={() => handleTakePhoto('ticket')}
-                >
-                    <Ionicons name="camera-sharp" size={20} color="#2563eb" />
-                    <Text style={styles.mediaButtonText}>
-                        {fishRecord.ticketPhoto ? 'Foto da Ficha ✓' : 'Foto da Ficha'}
-                    </Text>
-                </TouchableOpacity>
-            </View>
-
-            <View style={styles.cardHeader}>
-                <Ionicons name="videocam" size={24} color="#2563eb" />
-                <Text style={styles.cardTitle}>Vídeo</Text>
-            </View>
-            <View style={styles.cardContent}>
-                <TouchableOpacity
-                    style={styles.mediaButton}
-                    onPress={handleRecordVideo}
-                >
-                    <Ionicons name="videocam" size={20} color="#2563eb" />
-                    <Text style={styles.mediaButtonText}>
-                        {fishRecord.releaseVideo ? 'Vídeo da Soltura ✓' : 'Gravar Soltura do Peixe'}
-                    </Text>
-                </TouchableOpacity>
+                {mediaUri ? (
+                    <View style={{ gap: 12 }}>
+                        {isVideo ? (
+                            <Video
+                                source={{ uri: mediaUri }}
+                                rate={1.0}
+                                volume={1.0}
+                                isMuted={false}
+                                shouldPlay={false}
+                                style={{ width: '100%', height: 200, borderRadius: 8 }}
+                                useNativeControls
+                            />
+                        ) : (
+                            <Image
+                                source={{ uri: mediaUri }}
+                                style={{ width: '100%', height: 200, borderRadius: 8 }}
+                            />
+                        )}
+                        <View style={{ flexDirection: 'row', gap: 12 }}>
+                            <TouchableOpacity
+                                style={styles.mediaButton}
+                                onPress={onCapture}
+                            >
+                                <Ionicons name={isVideo ? "videocam" : "camera"} size={20} color="#2563eb" />
+                                <Text style={styles.mediaButtonText}>Capturar Novamente</Text>
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+                ) : (
+                    <TouchableOpacity
+                        style={styles.mediaButton}
+                        onPress={onCapture}
+                    >
+                        <Ionicons name={isVideo ? "videocam" : "camera"} size={20} color="#2563eb" />
+                        <Text style={styles.mediaButtonText}>Capturar {label}</Text>
+                    </TouchableOpacity>
+                )}
             </View>
         </View>
-    )
+    );
+
+    return (
+        <View style={{ flex: 1 }}>
+            {renderMediaSection(
+                'Foto do Peixe',
+                fishRecord.fishPhoto,
+                () => handleTakePhoto('fish'),
+                () => setFishRecord((prev: FishRecord) => ({ ...prev, fishPhoto: '' }))
+            )}
+            {renderMediaSection(
+                'Vídeo de Soltura',
+                fishRecord.releaseVideo,
+                handleRecordVideo,
+                () => setFishRecord((prev: FishRecord) => ({ ...prev, releaseVideo: '' })),
+                true
+            )}
+            {renderMediaSection(
+                'Foto da Ficha',
+                fishRecord.ticketPhoto,
+                () => handleTakePhoto('ticket'),
+                () => setFishRecord((prev: FishRecord) => ({ ...prev, ticketPhoto: '' }))
+            )}
+            {showCamera && (
+                <Camera
+                    onClose={() => setShowCamera(false)}
+                    type={cameraType}
+                    onMediaCaptured={handleMediaCaptured}
+                />
+            )}
+        </View>
+    );
 }
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: '#f0f9ff',
-    },
-    content: {
-        padding: 16,
-    },
     card: {
         backgroundColor: '#fff',
         borderRadius: 12,
@@ -125,40 +159,6 @@ const styles = StyleSheet.create({
     cardContent: {
         padding: 16,
     },
-    infoText: {
-        fontSize: 16,
-        color: '#374151',
-        marginBottom: 8,
-    },
-    infoLabel: {
-        fontWeight: 'bold',
-    },
-    inputGroup: {
-        marginBottom: 16,
-    },
-    label: {
-        fontSize: 16,
-        fontWeight: '600',
-        color: '#374151',
-        marginBottom: 8,
-    },
-    input: {
-        borderWidth: 1,
-        borderColor: '#d1d5db',
-        borderRadius: 8,
-        padding: 12,
-        fontSize: 16,
-        backgroundColor: '#fff',
-    },
-    pickerContainer: {
-        borderWidth: 1,
-        borderColor: '#d1d5db',
-        borderRadius: 8,
-        backgroundColor: '#fff',
-    },
-    picker: {
-        height: 50,
-    },
     mediaButton: {
         flexDirection: 'row',
         alignItems: 'center',
@@ -166,113 +166,13 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         borderColor: '#2563eb',
         borderRadius: 8,
-        padding: 16,
-        marginBottom: 12,
+        padding: 12,
+        paddingHorizontal: 16,
     },
     mediaButtonText: {
         fontSize: 16,
         color: '#2563eb',
         marginLeft: 8,
         fontWeight: '600',
-    },
-    submitButton: {
-        backgroundColor: '#2563eb',
-        borderRadius: 12,
-        padding: 16,
-        flexDirection: 'row',
-        justifyContent: 'center',
-        alignItems: 'center',
-        marginTop: 20,
-        marginBottom: 40,
-        elevation: 3,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.2,
-        shadowRadius: 4,
-    },
-    buttonIcon: {
-        marginRight: 8,
-    },
-    submitButtonText: {
-        color: '#fff',
-        fontSize: 18,
-        fontWeight: 'bold',
-    },
-    modalOverlay: {
-        flex: 1,
-        backgroundColor: 'rgba(0,0,0,0.5)',
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    modalContent: {
-        backgroundColor: '#fff',
-        borderRadius: 12,
-        padding: 20,
-        width: '90%',
-        maxHeight: '80%',
-    },
-    modalTitle: {
-        fontSize: 20,
-        fontWeight: 'bold',
-        color: '#1f2937',
-        textAlign: 'center',
-        marginBottom: 8,
-    },
-    modalSubtitle: {
-        fontSize: 14,
-        color: '#6b7280',
-        textAlign: 'center',
-        marginBottom: 20,
-    },
-    modalScroll: {
-        maxHeight: 300,
-    },
-    modalSection: {
-        backgroundColor: '#f9fafb',
-        borderRadius: 8,
-        padding: 12,
-        marginBottom: 12,
-    },
-    modalSectionTitle: {
-        fontSize: 16,
-        fontWeight: 'bold',
-        color: '#374151',
-        marginBottom: 8,
-    },
-    modalText: {
-        fontSize: 14,
-        color: '#4b5563',
-        marginBottom: 4,
-    },
-    modalButtons: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        marginTop: 20,
-    },
-    modalButtonSecondary: {
-        flex: 1,
-        backgroundColor: '#f3f4f6',
-        borderRadius: 8,
-        padding: 12,
-        marginRight: 8,
-    },
-    modalButtonSecondaryText: {
-        color: '#374151',
-        fontSize: 16,
-        fontWeight: 'bold',
-        textAlign: 'center',
-    },
-    modalButtonPrimary: {
-        flex: 1,
-        backgroundColor: '#2563eb',
-        borderRadius: 8,
-        padding: 12,
-        marginLeft: 8,
-    },
-    modalButtonPrimaryText: {
-        color: '#fff',
-        fontSize: 16,
-        fontWeight: 'bold',
-        textAlign: 'center',
     },
 });
