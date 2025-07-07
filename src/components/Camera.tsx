@@ -1,228 +1,238 @@
 import { Ionicons } from "@expo/vector-icons";
-import { CameraView, useCameraPermissions, CameraRecordingOptions } from "expo-camera";
-import { useEffect, useRef, useState } from "react";
-import { Keyboard, StyleSheet, Text, TouchableOpacity } from "react-native";
-import { View } from "react-native";
+import {
+    CameraView,
+    useCameraPermissions,
+    CameraRecordingOptions,
+} from "expo-camera";
+import {
+    useEffect,
+    useRef,
+    useState,
+    useCallback,
+} from "react";
+import {
+    Keyboard,
+    Modal,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
+} from "react-native";
 import { CameraPermissionModal } from "./CameraPermissionModal";
 
 interface CameraComponentProps {
-    type: 'photo' | 'video' | 'qrcode';
+    type: "photo" | "video" | "qrcode";
     onMediaCaptured: (type: string, data: any) => void;
+    active: boolean;
     onClose: () => void;
 }
 
 const recordingOptions: CameraRecordingOptions = {
-    maxDuration: 30, // Máximo 60 segundos
+    maxDuration: 30,
 };
 
-
-export function Camera({ type, onMediaCaptured, onClose }: CameraComponentProps) {
-    const [camera, setCamera] = useState<any | null>(null);
-    const [isRecording, setIsRecording] = useState(false);
+export function Camera({ type, onMediaCaptured, active, onClose }: CameraComponentProps) {
     const [permission, requestPermission] = useCameraPermissions();
+    const cameraRef = useRef<any>(null);
+
+    const [isRecording, setIsRecording] = useState(false);
     const [recordingTime, setRecordingTime] = useState(0);
-
-
     const intervalRef = useRef<any>(null);
+    const scannedRef = useRef(false); // evita múltiplas leituras de QR
 
     useEffect(() => {
         Keyboard.dismiss();
-        if (intervalRef.current) {
+        scannedRef.current = false;
+
+        return () => {
             clearInterval(intervalRef.current);
-        }
+        };
     }, []);
 
     const takePicture = async () => {
-        if (camera) {
-            const photo = await camera.takePictureAsync();
-            onMediaCaptured(type, photo);
+        if (cameraRef.current) {
+            const photo = await cameraRef.current.takePictureAsync();
+            onMediaCaptured("photo", photo);
         }
     };
 
     const recordVideo = async () => {
-        if (camera && !isRecording) {
-            setIsRecording(true);
+        if (!cameraRef.current) return;
 
+        if (!isRecording) {
+            setIsRecording(true);
             setRecordingTime(0);
 
-            // Inicia o cronômetro
             intervalRef.current = setInterval(() => {
                 setRecordingTime((prev) => prev + 1);
             }, 1000);
 
-            const video = await camera.recordAsync(recordingOptions);
-            onMediaCaptured(type, video);
+            const video = await cameraRef.current.recordAsync(recordingOptions);
+            onMediaCaptured("video", video);
             setIsRecording(false);
-
-
-        } else if (camera && isRecording) {
-            camera.stopRecording();
+        } else {
+            cameraRef.current.stopRecording();
         }
 
-        if (intervalRef.current) {
-            clearInterval(intervalRef.current);
-            intervalRef.current = null;
-        }
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
     };
+
+    const handleQRCodeScanned = useCallback(({ type, data }: { type: string; data: string }) => {
+        if (scannedRef.current) return;
+        scannedRef.current = true;
+        onMediaCaptured("qrcode", data);
+    }, [onMediaCaptured]);
+
+    if (!permission || !permission.granted) {
+        return <CameraPermissionModal onPermissionGranted={requestPermission} />;
+    }
 
     return (
         <View style={styles.cameraContainer}>
-            {permission && permission.granted ?
-                <CameraView
-                    style={styles.camera}
-                    ref={(ref: any) => setCamera(ref)}
-                    facing={"back"}
-                    mode={type === 'video' ? 'video' : 'picture'}
-                    barcodeScannerSettings={type === 'qrcode' ? { barcodeTypes: ['qr'] } : undefined}
-                    onBarcodeScanned={type === 'qrcode' ? ({ type, data }) => {
-                        onMediaCaptured(type, data); // Handle QR code scan
-                    } : undefined}
-                >
-                    {type === 'qrcode' ? (
-                        <View style={styles.scannerOverlay}>
-                            <View style={styles.scannerFrame} />
-                            <Text style={styles.scannerText} >Posicione o QR Code dentro do quadro</Text>
-                            <TouchableOpacity
-                                style={styles.cancelButton}
-                                onPress={onClose}
-                            >
-                                <Text style={styles.cancelButtonText}>Cancelar</Text>
-                            </TouchableOpacity>
-                        </View>
+            <CameraView
+                ref={cameraRef}
+                style={styles.camera}
+                facing="back"
+                active={active}
+                mode={type === "video" ? "video" : "picture"}
+                barcodeScannerSettings={type === "qrcode" ? { barcodeTypes: ["qr"] } : undefined}
+                onBarcodeScanned={type === "qrcode" ? handleQRCodeScanned : undefined}
+            />
+            {type === "qrcode" ? (
+                <View style={styles.scannerOverlay}>
+                    <View style={styles.scannerFrame} />
+                    <Text style={styles.scannerText}>Posicione o QR Code dentro do quadro</Text>
+                    <TouchableOpacity style={styles.cancelButton} onPress={onClose}>
+                        <Text style={styles.cancelButtonText}>Cancelar</Text>
+                    </TouchableOpacity>
+                </View>
+            ) : (
+                <View style={styles.cameraOverlay}>
+                    <TouchableOpacity style={styles.closeButton} onPress={onClose}>
+                        <Ionicons name="close" size={30} color="#fff" />
+                    </TouchableOpacity>
 
-                    ) : (
-                        <View style={styles.cameraOverlay}>
-                            <TouchableOpacity style={styles.closeButton} onPress={onClose}>
-                                <Ionicons name="close" size={30} color="#fff" />
-                            </TouchableOpacity>
-                            {/* Timer */}
-                            {isRecording && (
-                                <View style={styles.timerContainer}>
-                                    <Text style={styles.timerText}>
-                                        {Math.floor(recordingTime / 60)}:
-                                        {String(recordingTime % 60).padStart(2, '0')}
-                                    </Text>
-                                </View>
-                            )}
-
-                            <View style={styles.cameraControls}>
-                                <TouchableOpacity
-                                    style={[styles.captureButton, isRecording && styles.recordingButton]}
-                                    onPress={type === 'photo' ? takePicture : recordVideo}
-                                >
-                                    <Ionicons
-                                        name={type === 'photo' ? 'camera' : (isRecording ? 'stop' : 'videocam')}
-                                        size={30}
-                                        color="#fff"
-                                    />
-                                </TouchableOpacity>
-                            </View>
+                    {isRecording && (
+                        <View style={styles.timerContainer}>
+                            <Text style={styles.timerText}>
+                                {Math.floor(recordingTime / 60)}:
+                                {String(recordingTime % 60).padStart(2, "0")}
+                            </Text>
                         </View>
                     )}
 
-                </CameraView>
-                :
-                (
-                    <CameraPermissionModal onPermissionGranted={requestPermission} />
-                )
-            }
-        </View >
+                    <View style={styles.cameraControls}>
+                        <TouchableOpacity
+                            style={[styles.captureButton, isRecording && styles.recordingButton]}
+                            onPress={type === "photo" ? takePicture : recordVideo}
+                        >
+                            <Ionicons
+                                name={
+                                    type === "photo"
+                                        ? "camera"
+                                        : isRecording
+                                            ? "stop"
+                                            : "videocam"
+                                }
+                                size={30}
+                                color="#fff"
+                            />
+                        </TouchableOpacity>
+                    </View>
+                </View>
+            )}
+        </View>
     );
 }
 
-
 const styles = StyleSheet.create({
     cameraContainer: {
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
+        position: "absolute",
+        width: "100%",
+        height: "100%",
+        top: 0, left: 0, right: 0, bottom: 0,
         zIndex: 9999,
-        backgroundColor: '#000',
+        backgroundColor: "#000",
         flex: 1,
     },
     camera: {
         flex: 1,
-        width: '100%',
-        height: '100%',
+        width: "100%",
+        height: "100%",
     },
     cameraOverlay: {
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        justifyContent: 'flex-end',
+        ...StyleSheet.absoluteFillObject,
+        justifyContent: "flex-end",
     },
     closeButton: {
-        position: 'absolute',
+        position: "absolute",
         top: 40,
         right: 20,
-        backgroundColor: 'rgba(0,0,0,0.5)',
+        backgroundColor: "rgba(0,0,0,0.5)",
         borderRadius: 20,
         padding: 8,
         zIndex: 10,
     },
     timerContainer: {
-        position: 'absolute',
+        position: "absolute",
         top: 50,
-        alignSelf: 'center',
-        backgroundColor: 'rgba(243, 5, 5, 0.83)',
+        alignSelf: "center",
+        backgroundColor: "rgba(243, 5, 5, 0.83)",
         paddingHorizontal: 16,
         paddingVertical: 6,
         borderRadius: 15,
         zIndex: 10,
     },
     timerText: {
-        color: '#fff',
+        color: "#fff",
         fontSize: 16,
-        fontWeight: 'bold',
+        fontWeight: "bold",
     },
     cameraControls: {
-        alignItems: 'center',
+        alignItems: "center",
         paddingBottom: 50,
     },
     captureButton: {
-        backgroundColor: '#2563eb',
+        backgroundColor: "#2563eb",
         borderRadius: 35,
         width: 70,
         height: 70,
-        justifyContent: 'center',
-        alignItems: 'center',
+        justifyContent: "center",
+        alignItems: "center",
     },
     recordingButton: {
-        backgroundColor: '#ef4444',
+        backgroundColor: "#ef4444",
     },
     scannerOverlay: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        backgroundColor: 'rgba(0,0,0,0.5)',
+        ...StyleSheet.absoluteFillObject,
+        justifyContent: "center",
+        alignItems: "center",
+        backgroundColor: "trasparent",
     },
     scannerFrame: {
         width: 250,
         height: 250,
         borderWidth: 2,
-        borderColor: '#fff',
-        backgroundColor: 'transparent',
+        borderColor: "#fff",
+        backgroundColor: "transparent",
     },
     scannerText: {
-        color: '#fff',
+        color: "#fff",
         fontSize: 16,
         marginTop: 20,
         textAlign: "center",
     },
     cancelButton: {
-        backgroundColor: '#ef4444',
+        backgroundColor: "#ef4444",
         paddingHorizontal: 20,
         paddingVertical: 10,
         borderRadius: 8,
         marginTop: 30,
     },
     cancelButtonText: {
-        color: '#fff',
+        color: "#fff",
         fontSize: 16,
-        fontWeight: 'bold',
+        fontWeight: "bold",
     },
 });

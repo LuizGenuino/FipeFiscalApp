@@ -6,11 +6,12 @@ import {
     TouchableOpacity,
     View,
     Image,
+    Modal,
 } from "react-native";
-import { Video } from "expo-av";
-import { FishRecord } from "../app";
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { Camera } from "./Camera";
+import { FishRecord } from "../assets/types";
+import VideoPreview from "./VideoPreview";
 
 interface ScoreFormProps {
     fishRecord: FishRecord;
@@ -18,41 +19,51 @@ interface ScoreFormProps {
 }
 
 export function RegisterCapture({ fishRecord, setFishRecord }: ScoreFormProps) {
-
     const [showCamera, setShowCamera] = useState(false);
-    const [cameraType, setCameraType] = useState<'photo' | 'video'>('photo');
-    const [photoType, setPhotoType] = useState<'fish' | 'ticket'>('fish');
+    const [cameraType, setCameraType] = useState<"photo" | "video">("photo");
+    const [photoType, setPhotoType] = useState<"fish" | "ticket">("fish");
 
-    const handleTakePhoto = (type: 'fish' | 'ticket') => {
+    const openCameraForPhoto = useCallback((type: "fish" | "ticket") => {
         setPhotoType(type);
-        setCameraType('photo');
+        setCameraType("photo");
         setShowCamera(true);
-    };
+    }, []);
 
-    const handleRecordVideo = () => {
-        setCameraType('video');
+    const openCameraForVideo = useCallback(() => {
+        setCameraType("video");
         setShowCamera(true);
-    };
+    }, []);
 
     const handleMediaCaptured = (type: string, data: any) => {
         setShowCamera(false);
+
         if (!data || !data.uri) {
-            Alert.alert('Erro', 'Não foi possível capturar a mídia. Tente novamente.');
+            Alert.alert("Erro", "Não foi possível capturar a mídia. Tente novamente.");
             return;
         }
 
-        if (type === 'photo') {
-            if (photoType === 'fish') {
-                setFishRecord((prev) => ({ ...prev, fishPhoto: data.uri }));
+        if (type === "photo") {
+            if (photoType === "fish") {
+                setFishRecord((prev) => ({ ...prev, fishPhoto: data.uri ?? "" }));
             } else {
-                setFishRecord((prev) => ({ ...prev, ticketPhoto: data.uri }));
+                setFishRecord((prev) => ({ ...prev, ticketPhoto: data.uri ?? "" }));
             }
-        } else {
-            setFishRecord((prev) => ({ ...prev, releaseVideo: data.uri }));
+        } else if (type === "video") {
+            setFishRecord((prev) => ({ ...prev, releaseVideo: data.uri ?? "" }));
         }
     };
 
-    const renderMediaSection = (label: string, mediaUri: string | undefined, onCapture: () => void, onRemove: () => void, isVideo = false) => (
+    const removeMedia = (mediaKey: keyof FishRecord) => {
+        setFishRecord((prev) => ({ ...prev, [mediaKey]: "" }));
+    };
+
+    const renderMediaSection = (
+        label: string,
+        mediaUri: string | undefined,
+        onCapture: () => void,
+        onRemove: () => void,
+        isVideo = false
+    ) => (
         <View style={styles.card}>
             <View style={styles.cardHeader}>
                 <Ionicons name={isVideo ? "videocam" : "camera"} size={24} color="#2563eb" />
@@ -60,37 +71,34 @@ export function RegisterCapture({ fishRecord, setFishRecord }: ScoreFormProps) {
             </View>
             <View style={styles.cardContent}>
                 {mediaUri ? (
-                    <View style={{ gap: 12 }}>
+                    <>
                         {isVideo ? (
-                            <Video
-                                source={{ uri: mediaUri }}
-                                rate={1.0}
-                                volume={1.0}
-                                isMuted={false}
-                                shouldPlay={false}
-                                style={{ width: '100%', height: 200, borderRadius: 8 }}
-                                useNativeControls
-                            />
+                            <VideoPreview
+                                source={mediaUri} />
                         ) : (
                             <Image
                                 source={{ uri: mediaUri }}
-                                style={{ width: '100%', height: 200, borderRadius: 8 }}
+                                style={styles.mediaPreview}
                             />
                         )}
-                        <View style={{ flexDirection: 'row', gap: 12 }}>
+                        <View style={styles.mediaButtonsContainer}>
                             <TouchableOpacity
                                 style={styles.mediaButton}
                                 onPress={onCapture}
+                                accessible
+                                accessibilityLabel={`Capturar ${label} novamente`}
                             >
                                 <Ionicons name={isVideo ? "videocam" : "camera"} size={20} color="#2563eb" />
                                 <Text style={styles.mediaButtonText}>Capturar Novamente</Text>
                             </TouchableOpacity>
                         </View>
-                    </View>
+                    </>
                 ) : (
                     <TouchableOpacity
                         style={styles.mediaButton}
                         onPress={onCapture}
+                        accessible
+                        accessibilityLabel={`Capturar ${label}`}
                     >
                         <Ionicons name={isVideo ? "videocam" : "camera"} size={20} color="#2563eb" />
                         <Text style={styles.mediaButtonText}>Capturar {label}</Text>
@@ -103,30 +111,41 @@ export function RegisterCapture({ fishRecord, setFishRecord }: ScoreFormProps) {
     return (
         <View style={{ flex: 1 }}>
             {renderMediaSection(
-                'Foto do Peixe',
+                "Foto do Peixe",
                 fishRecord.fishPhoto,
-                () => handleTakePhoto('fish'),
-                () => setFishRecord((prev: FishRecord) => ({ ...prev, fishPhoto: '' }))
+                () => openCameraForPhoto("fish"),
+                () => removeMedia("fishPhoto")
             )}
             {renderMediaSection(
-                'Vídeo de Soltura',
+                "Vídeo de Soltura",
                 fishRecord.releaseVideo,
-                handleRecordVideo,
-                () => setFishRecord((prev: FishRecord) => ({ ...prev, releaseVideo: '' })),
+                openCameraForVideo,
+                () => removeMedia("releaseVideo"),
                 true
             )}
             {renderMediaSection(
-                'Foto da Ficha',
+                "Foto da Ficha",
                 fishRecord.ticketPhoto,
-                () => handleTakePhoto('ticket'),
-                () => setFishRecord((prev: FishRecord) => ({ ...prev, ticketPhoto: '' }))
+                () => openCameraForPhoto("ticket"),
+                () => removeMedia("ticketPhoto")
             )}
+
             {showCamera && (
-                <Camera
-                    onClose={() => setShowCamera(false)}
-                    type={cameraType}
-                    onMediaCaptured={handleMediaCaptured}
-                />
+                <Modal
+                    animationType="slide"
+                    transparent={true}
+                    visible={showCamera}
+                    onRequestClose={() => setShowCamera(false)}
+                    accessible
+                    accessibilityLabel="Modal de captura de mídia"
+                >
+                    <Camera
+                        onClose={() => setShowCamera(false)}
+                        active={showCamera}
+                        type={cameraType}
+                        onMediaCaptured={handleMediaCaptured}
+                    />
+                </Modal>
             )}
         </View>
     );
@@ -134,45 +153,60 @@ export function RegisterCapture({ fishRecord, setFishRecord }: ScoreFormProps) {
 
 const styles = StyleSheet.create({
     card: {
-        backgroundColor: '#fff',
+        backgroundColor: "#fff",
         borderRadius: 12,
         marginBottom: 16,
         elevation: 2,
-        shadowColor: '#000',
+        shadowColor: "#000",
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.1,
         shadowRadius: 4,
     },
     cardHeader: {
-        flexDirection: 'row',
-        alignItems: 'center',
+        flexDirection: "row",
+        alignItems: "center",
         padding: 16,
         borderBottomWidth: 1,
-        borderBottomColor: '#e5e7eb',
+        borderBottomColor: "#e5e7eb",
     },
     cardTitle: {
         fontSize: 18,
-        fontWeight: 'bold',
-        color: '#1f2937',
+        fontWeight: "bold",
+        color: "#1f2937",
         marginLeft: 8,
     },
     cardContent: {
         padding: 16,
     },
-    mediaButton: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        backgroundColor: '#f8fafc',
-        borderWidth: 1,
-        borderColor: '#2563eb',
+    mediaPreview: {
+        width: "auto",
+        height: 250,
         borderRadius: 8,
-        padding: 12,
+        marginBottom: 12,
+    },
+    mediaButtonsContainer: {
+        flexDirection: "row",
+        justifyContent: "center",
+        gap: 12,
+    },
+    mediaButton: {
+        flexDirection: "row",
+        alignItems: "center",
+        backgroundColor: "#f8fafc",
+        borderWidth: 1,
+        borderColor: "#2563eb",
+        borderRadius: 8,
+        paddingVertical: 12,
         paddingHorizontal: 16,
+    },
+    removeButton: {
+        borderColor: "#ef4444",
+        backgroundColor: "#fff0f0",
     },
     mediaButtonText: {
         fontSize: 16,
-        color: '#2563eb',
+        color: "#2563eb",
         marginLeft: 8,
-        fontWeight: '600',
+        fontWeight: "600",
     },
 });

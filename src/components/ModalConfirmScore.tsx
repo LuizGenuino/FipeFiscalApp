@@ -1,5 +1,5 @@
 import { Modal, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import { FishRecord } from "../app";
+import { FishRecord } from "../assets/types";
 
 interface ModalConfirmScoreProps {
     showConfirmModal: boolean;
