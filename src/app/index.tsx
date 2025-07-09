@@ -16,8 +16,8 @@ import { useRouter } from 'expo-router';
 
 export default function LoginScreen() {
   const router = useRouter();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState('example@email.com');
+  const [password, setPassword] = useState('123456789');
   const [isLoading, setIsLoading] = useState(false);
 
   const handleLogin = async () => {

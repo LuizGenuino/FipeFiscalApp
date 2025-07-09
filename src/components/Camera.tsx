@@ -152,7 +152,7 @@ const styles = StyleSheet.create({
         width: "100%",
         height: "100%",
         top: 0, left: 0, right: 0, bottom: 0,
-        zIndex: 9999,
+        zIndex: 99,
         backgroundColor: "#000",
         flex: 1,
     },
@@ -160,10 +160,12 @@ const styles = StyleSheet.create({
         flex: 1,
         width: "100%",
         height: "100%",
+        zIndex: 99
     },
     cameraOverlay: {
         ...StyleSheet.absoluteFillObject,
         justifyContent: "flex-end",
+        zIndex: 100
     },
     closeButton: {
         position: "absolute",
@@ -172,7 +174,7 @@ const styles = StyleSheet.create({
         backgroundColor: "rgba(0,0,0,0.5)",
         borderRadius: 20,
         padding: 8,
-        zIndex: 10,
+        zIndex: 100,
     },
     timerContainer: {
         position: "absolute",
@@ -192,6 +194,7 @@ const styles = StyleSheet.create({
     cameraControls: {
         alignItems: "center",
         paddingBottom: 50,
+        zIndex: 100,
     },
     captureButton: {
         backgroundColor: "#2563eb",
@@ -209,6 +212,7 @@ const styles = StyleSheet.create({
         justifyContent: "center",
         alignItems: "center",
         backgroundColor: "trasparent",
+        zIndex: 100,
     },
     scannerFrame: {
         width: 250,

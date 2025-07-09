@@ -133,11 +133,7 @@ export function RegisterCapture({ fishRecord, setFishRecord }: ScoreFormProps) {
             {showCamera && (
                 <Modal
                     animationType="slide"
-                    transparent={true}
                     visible={showCamera}
-                    onRequestClose={() => setShowCamera(false)}
-                    accessible
-                    accessibilityLabel="Modal de captura de mídia"
                 >
                     <Camera
                         onClose={() => setShowCamera(false)}
@@ -180,7 +176,7 @@ const styles = StyleSheet.create({
     },
     mediaPreview: {
         width: "auto",
-        height: 250,
+        height: 300,
         borderRadius: 8,
         marginBottom: 12,
     },
