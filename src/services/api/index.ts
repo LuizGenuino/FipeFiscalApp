@@ -1,4 +1,5 @@
-const url = 'http://192.168.2.141:3000/api';
+//const url = 'http://192.168.2.141:3000/api'; 
+const url = 'http://192.168.2.170:3000/api';
 
 export class ApiService {
     path = '';
@@ -14,8 +15,9 @@ export class ApiService {
                 'Content-Type': 'application/json',
             },
         });
+        console.log(response);
         if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+            throw new Error(String(response.status));
         }
         return response.json();
     }
@@ -28,8 +30,10 @@ export class ApiService {
             },
             body: JSON.stringify(data),
         });
+        console.log(response);
+
         if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+            throw new Error(String(response.status));
         }
         return response.json();
     }

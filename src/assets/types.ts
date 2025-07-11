@@ -4,13 +4,13 @@ export type RootStackParamList = {
   RegisterScore: { team: any };
 };
 
-export interface Team {
+export type Team = {
   id: string;
   name: string;
   code: string;
 }
 
-export interface FishRecord {
+export type FishRecord = {
   species: string;
   size: string;
   ticketNumber: string;
@@ -18,4 +18,17 @@ export interface FishRecord {
   fishPhoto: string;
   ticketPhoto: string;
   releaseVideo: string;
+}
+
+export type ApiResponse = {
+  success: boolean;
+  status: number;
+  message?: string;
+  data?: any;
+};
+
+
+export type LoginData = {
+  email: string;
+  password: string;
 }
