@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { use, useEffect, useState } from 'react';
 import {
     View,
     Text,
@@ -16,6 +16,8 @@ import { Camera } from '@/src/components/Camera';
 import { RootStackParamList, Team } from '../assets/types';
 import { useNavigation } from '@react-navigation/native'; // hook moderno React Navigation
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { getFishService, getTeamsService } from '../services/controller';
+import { getUser } from '../services/storage';
 
 type SearchTeamNavigationProp = NativeStackNavigationProp<RootStackParamList, 'SearchTeam'>;
 
@@ -32,6 +34,47 @@ export default function SearchTeam() {
     const [teamCode, setTeamCode] = useState('PU001');
     const [isSearching, setIsSearching] = useState(false);
     const [showScanner, setShowScanner] = useState(false);
+
+    useEffect(() => {
+        checkAuth();
+        getAllTeams();
+        getFishList();
+    }, []);
+
+    const checkAuth = async () => {
+        try {
+            const userAuth: any = await getUser();
+            if (!userAuth || !JSON.parse(userAuth).id) {
+                Alert.alert('Atenção', 'Você precisa estar logado para acessar esta tela');
+                navigation.navigate('Login');
+            }
+        } catch (error) {
+            console.error('Erro ao verificar autenticação:', error);
+            Alert.alert('Erro', 'Não foi possível verificar a autenticação');
+        }
+    };
+
+    const getAllTeams = async () => {
+        const response = await getTeamsService();
+        console.log('Teams fetched:', response);
+
+        if (!response.success) {
+            Alert.alert('Erro', response.message);
+            return;
+        }
+
+    }
+
+    const getFishList = async () => {
+        const response = await getFishService();
+        console.log('fish list fetched:', response);
+
+        if (!response.success) {
+            Alert.alert('Erro', response.message);
+            return;
+        }
+
+    }
 
     const handleSearch = async () => {
         const code = teamCode.trim().toUpperCase();
