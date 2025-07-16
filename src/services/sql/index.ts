@@ -2,151 +2,132 @@ import { OfflineStorageData } from '@/src/assets/types';
 import * as SQLite from 'expo-sqlite';
 
 class OfflineStorage {
+    private db: SQLite.SQLiteDatabase | null = null;
 
     constructor() {
-        // Inicializa o banco de dados e cria as tabelas se não existirem
         this.init();
     }
 
+    // Inicializa e configura o banco
     async init() {
-        const db = await SQLite.openDatabaseAsync('FipeFiscalApp');
-        await db.execAsync(`
-            PRAGMA journal_mode = WAL;
-            CREATE TABLE IF NOT EXISTS teams (
-                id TEXT PRIMARY KEY NOT NULL,
-                code TEXT NOT NULL,
-                team_name TEXT NOT NULL,
-                id_member_1 INTEGER NOT NULL,
-                name_member_1 TEXT NOT NULL,
-                id_member_2 INTEGER,
-                name_member_2 TEXT,
-                id_member_3 INTEGER,
-                name_member_3 TEXT,
-                id_member_4 INTEGER,
-                name_member_4 TEXT
-            );
-        `);
+        this.db = await SQLite.openDatabaseAsync('FipeFiscalApp');
+        await this.db.execAsync(`PRAGMA journal_mode = WAL;`);
 
-        await db.execAsync(`
-            PRAGMA journal_mode = WAL;
-            CREATE TABLE IF NOT EXISTS fish (
-                id TEXT PRIMARY KEY NOT NULL,
-                species TEXT NOT NULL,
-                photo TEXT NOT NULL,
-                point integer NOT NULL
-            );
-        `);
+        // Criação das tabelas
+        await this.db.execAsync(`
+      CREATE TABLE IF NOT EXISTS teams (
+        id TEXT PRIMARY KEY NOT NULL,
+        code TEXT NOT NULL,
+        team_name TEXT NOT NULL,
+        id_member_1 INTEGER NOT NULL,
+        name_member_1 TEXT NOT NULL,
+        id_member_2 INTEGER,
+        name_member_2 TEXT,
+        id_member_3 INTEGER,
+        name_member_3 TEXT,
+        id_member_4 INTEGER,
+        name_member_4 TEXT
+      );
+    `);
+
+        await this.db.execAsync(`
+      CREATE TABLE IF NOT EXISTS fish (
+        id TEXT PRIMARY KEY NOT NULL,
+        species TEXT NOT NULL,
+        photo TEXT NOT NULL,
+        point INTEGER NOT NULL
+      );
+    `);
     }
 
+    // Garante que o banco foi inicializado
+    private getDb() {
+        if (!this.db) throw new Error('Banco de dados ainda não foi inicializado');
+        return this.db;
+    }
+
+    // Armazena equipes offline
+    async setTeams(data: OfflineStorageData) {
+        if (data.column !== 'teams') return;
+
+        const db = this.getDb();
+        await db.execAsync('DELETE FROM teams');
 
 
-    async setTeams(teams: OfflineStorageData) {
-        try {
-            const db = await SQLite.openDatabaseAsync('FipeFiscalApp');
-            await db.execAsync(`
-            PRAGMA journal_mode = WAL;
-            CREATE TABLE IF NOT EXISTS teams (
-                id TEXT PRIMARY KEY NOT NULL,
-                code TEXT NOT NULL,
-                team_name TEXT NOT NULL,
-                id_member_1 INTEGER NOT NULL,
-                name_member_1 TEXT NOT NULL,
-                id_member_2 INTEGER,
-                name_member_2 TEXT,
-                id_member_3 INTEGER,
-                name_member_3 TEXT,
-                id_member_4 INTEGER,
-                name_member_4 TEXT
+        for (const item of data.value) {
+            await db.runAsync(
+                `INSERT INTO teams (
+            id, code, team_name,
+            id_member_1, name_member_1,
+            id_member_2, name_member_2,
+            id_member_3, name_member_3,
+            id_member_4, name_member_4
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                [
+                    item.id,
+                    item.code,
+                    item.team_name,
+                    item.id_member_1,
+                    item.name_member_1,
+                    item.id_member_2 ?? null,
+                    item.name_member_2 ?? null,
+                    item.id_member_3 ?? null,
+                    item.name_member_3 ?? null,
+                    item.id_member_4 ?? null,
+                    item.name_member_4 ?? null,
+                ]
             );
-        `);
+        }
 
-            if (teams.column === 'teams') {
-                for (const item of teams.value) {
-                    const result = await db.runAsync(
-                        'INSERT INTO teams (id, code, team_name, id_member_1, name_member_1, id_member_2, name_member_2, id_member_3, name_member_3, id_member_4, name_member_4) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-                        item.id,
-                        item.code,
-                        item.team_name,
-                        item.id_member_1,
-                        item.name_member_1,
-                        item.id_member_2 ?? null,
-                        item.name_member_2 ?? null,
-                        item.id_member_3 ?? null,
-                        item.name_member_3 ?? null,
-                        item.id_member_4 ?? null,
-                        item.name_member_4 ?? null
-                    );
+    }
 
-                    console.log(`Inserted team with ID: ${item.id}, Result: ${result.lastInsertRowId}, ${result.changes}`);
-                }
-            }
+    // Armazena peixes offline
+    async setFish(data: OfflineStorageData) {
+        if (data.column !== 'fish') return;
 
-        } catch (error) {
-            console.error('Error setting teams in offline storage:', error);
+        const db = this.getDb();
+        await db.execAsync('DELETE FROM fish');
 
+
+        for (const item of data.value) {
+            await db.runAsync(
+                `INSERT INTO fish (
+            id, species, photo, point
+          ) VALUES (?, ?, ?, ?)`,
+                [
+                    item.id,
+                    item.species,
+                    item.photo,
+                    item.point,
+                ]
+            );
         }
     }
 
-    async setFish(fish: OfflineStorageData) {
-        console.log("chama função", fish);
-
-        try {
-            const db = await SQLite.openDatabaseAsync('FipeFiscalApp');
-            await db.execAsync(`
-            PRAGMA journal_mode = WAL;
-            CREATE TABLE IF NOT EXISTS fish (
-                id TEXT PRIMARY KEY NOT NULL,
-                species TEXT NOT NULL,
-                photo TEXT NOT NULL,
-                point integer NOT NULL
-            );
-        `);
-
-            if (fish.column === 'fish') {
-                for (const item of fish.value) {
-                    const result = await db.runAsync(
-                        'INSERT INTO fish (id, species, photo, point) VALUES (?, ?, ?, ?)',
-                        item.id,
-                        item.species,
-                        item.photo,
-                        item.point
-                    );
-                    console.log(`Inserted fish with ID: ${item.id}, Result: ${result.lastInsertRowId}, ${result.changes}`);
-                }
-            }
-
-        } catch (error) {
-            console.error('Error setting fish in offline storage:', error);
-
-        }
-    }
-
+    // Recupera todas as equipes
     async getAllTeams() {
-        const db = await SQLite.openDatabaseAsync('FipeFiscalApp');
-        const result = await db.getAllAsync('SELECT * FROM teams');
-        return result;
+        const db = this.getDb();
+        return await db.getAllAsync('SELECT * FROM teams');
     }
 
-
+    // Recupera todos os peixes
     async getAllFish() {
-        const db = await SQLite.openDatabaseAsync('FipeFiscalApp');
-        const result = await db.getAllAsync('SELECT * FROM fish');
-        return result;
+        const db = this.getDb();
+        return await db.getAllAsync('SELECT * FROM fish');
     }
 
+    // Limpa os dados de uma tabela
     async clear(column: string) {
-        console.log("chama função column", column);
-        const db = await SQLite.openDatabaseAsync('FipeFiscalApp');
-        if (column === 'teams') {
-            await db.execAsync('DROP TABLE IF EXISTS teams');
-        } else if (column === 'fish') {
-            await db.execAsync('DROP TABLE IF EXISTS fish');
-        } else {
-            console.warn(`Unknown column: ${column}. No tables dropped.`);
-        }
-        console.log('Offline storage cleared.');
-    }
+        const db = this.getDb();
 
+        if (column === 'teams') {
+            await db.execAsync('DELETE FROM teams');
+        } else if (column === 'fish') {
+            await db.execAsync('DELETE FROM fish');
+        } else {
+            console.warn(`Coluna desconhecida: ${column}`);
+        }
+    }
 }
 
 export default OfflineStorage;

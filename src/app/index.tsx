@@ -13,7 +13,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { LoginService } from '../services/controller';
+import { AuthService } from '../services/controller';
 import { getUser } from '../services/storage';
 
 export default function LoginScreen() {
@@ -21,6 +21,7 @@ export default function LoginScreen() {
     const [email, setEmail] = useState('example@email.com');
     const [password, setPassword] = useState('123456789');
     const [isLoading, setIsLoading] = useState(false);
+    const authService = new AuthService()
 
     useEffect(() => {
         verifyAuth()
@@ -46,15 +47,20 @@ export default function LoginScreen() {
             Alert.alert('Erro', 'Por favor, preencha todos os campos');
             return;
         }
+        if (!email.includes('@')) {
+            Alert.alert('Erro', 'Email Invalido ou Incorreto');
+            return;
+        }
         if (!email.includes('@') || password.length < 6) {
-            Alert.alert('Erro', 'Credenciais inválidas');
+            Alert.alert('Erro', 'Senha Incorreta');
             return;
         }
         setIsLoading(true);
-        const reponse = await LoginService({ email, password })
+        const reponse = await authService.Login({ email, password })
 
         if (!reponse.success) {
             Alert.alert('Tente Novamente', reponse.message);
+            authService.Logout()
             setIsLoading(false);
             return;
         }

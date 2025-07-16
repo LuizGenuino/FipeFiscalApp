@@ -1,4 +1,4 @@
-import React, { use, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
     View,
     Text,
@@ -16,7 +16,7 @@ import { Camera } from '@/src/components/Camera';
 import { RootStackParamList, Team } from '../assets/types';
 import { useNavigation } from '@react-navigation/native'; // hook moderno React Navigation
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { getFishService, getTeamsService } from '../services/controller';
+import { TeamsService, FishService } from '../services/controller';
 import { getUser } from '../services/storage';
 
 type SearchTeamNavigationProp = NativeStackNavigationProp<RootStackParamList, 'SearchTeam'>;
@@ -34,6 +34,7 @@ export default function SearchTeam() {
     const [teamCode, setTeamCode] = useState('PU001');
     const [isSearching, setIsSearching] = useState(false);
     const [showScanner, setShowScanner] = useState(false);
+    const teamsService = new TeamsService()
 
     useEffect(() => {
         checkAuth();
@@ -55,22 +56,20 @@ export default function SearchTeam() {
     };
 
     const getAllTeams = async () => {
-        const response = await getTeamsService();
-        console.log('Teams fetched:', response);
+        const response = await teamsService.getAllTeams();
 
         if (!response.success) {
-            Alert.alert('Erro', response.message);
+            Alert.alert('Erro ao Buscar os Times', response.message);
             return;
         }
 
     }
 
     const getFishList = async () => {
-        const response = await getFishService();
-        console.log('fish list fetched:', response);
+        const response = await new FishService().getFishList()
 
         if (!response.success) {
-            Alert.alert('Erro', response.message);
+            Alert.alert('Erro ao Buscar os Peixes', response.message);
             return;
         }
 

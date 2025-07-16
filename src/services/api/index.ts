@@ -1,65 +1,71 @@
+
 import { getUser } from "../storage";
 
-const url = 'http://192.168.2.141:3000/api';
-//const url = 'http://192.168.2.170:3000/api';
+const API_BASE_URL = 'http://192.168.2.141:3000/api';
+//const API_BASE_URL = 'http://192.168.2.170:3000/api';
+
 
 export class ApiService {
-    path = '';
+  path: string;
 
-    constructor(path: string) {
-        this.path = path;
+  constructor(path: string) {
+    this.path = path;
+  }
+
+  async get<T>(): Promise<T> {
+    return this.request<T>('GET');
+  }
+
+  async post<T>(data: any): Promise<T> {
+    return this.request<T>('POST', data);
+  }
+
+  private async request<T>(method: 'GET' | 'POST', body?: any): Promise<T> {
+    const token = await this.getToken();
+
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    };
+
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
     }
 
-    async get<T>(): Promise<T> {
-        const response = await fetch(`${url}${this.path}`, {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-                // Adiciona o token de autenticação se disponível
-                ...(await this.getToken() ? { Authorization: `${await this.getToken()}` } : {}),
-            },
+    const options: RequestInit = {
+      method,
+      headers,
+    };
 
-        });
-
-        const responseData = await response.json();
-
-        if (!response.ok) {
-            // Tenta pegar a mensagem do erro no corpo da resposta
-            const errorMessage = responseData?.message || `HTTP error! status: ${response.status}`;
-            throw new Error(errorMessage);
-        }
-
-        return responseData;
+    if (body) {
+      options.body = JSON.stringify(body);
     }
 
-    async post<T>(data: any): Promise<T> {
-        const response = await fetch(`${url}${this.path}`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(data),
-        });
+    try {
+      const response = await fetch(`${API_BASE_URL}${this.path}`, options);
+      const data = await response.json();
 
-        const responseData = await response.json();
+      if (!response.ok) {
+        const message = data?.message || `Erro HTTP: ${response.status}`;
+        throw new Error(message);
+      }
 
-        if (!response.ok) {
-            // Tenta pegar a mensagem do erro no corpo da resposta
-            const errorMessage = responseData?.message || `HTTP error! status: ${response.status}`;
-            throw new Error(errorMessage);
-        }
-
-        return responseData;
+      return data;
+    } catch (err: any) {
+      // Aqui você pode logar o erro em um serviço, se quiser
+      throw new Error(err?.message || 'Erro ao conectar com o servidor');
     }
+  }
 
-    async getToken(): Promise<string> {
-        const userAuth: any = await getUser();
-        const user = JSON.parse(userAuth);
+  private async getToken(): Promise<string | null> {
+    try {
+      const userAuth = await getUser();
+      if (!userAuth) return null;
 
-        if (!user || !user.token) {
-            throw new Error('Usuário não autenticado ou token não encontrado');
-        }
-
-        return user.token;
+      const user = JSON.parse(userAuth);
+      return user?.token || null;
+    } catch (err) {
+      console.warn('Erro ao buscar token:', err);
+      return null;
     }
+  }
 }

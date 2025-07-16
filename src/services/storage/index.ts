@@ -3,9 +3,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 // cria função para armazenar login do usuario authenticado no AsyncStorage
 export const storeUser = async (user: object): Promise<void> => {
     try {
-
         await AsyncStorage.setItem("loginUser@Fipe", JSON.stringify(user));
-        console.log('Login stored successfully');
     } catch (error) {
         console.error('Error storing login:', error);
     }
@@ -15,9 +13,19 @@ export const storeUser = async (user: object): Promise<void> => {
 export const getUser = async (): Promise<string | null> => {
     try {
         const data = await AsyncStorage.getItem("loginUser@Fipe");
-       return data;
+        return data;
     } catch (error) {
         console.error('Error retrieving login:', error);
         return null;
     }
 }
+
+export const clearUser = async (): Promise<any> => {
+    try {
+        await AsyncStorage.removeItem("loginUser@Fipe");
+    } catch (error) {
+        console.error('Error retrieving login:', error);
+        return null;
+    }
+}
+
