@@ -1,13 +1,10 @@
 import { Modal, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import { FishRecord } from "../assets/types";
+import { FishRecord, TeamsOfflineStorage } from "../assets/types";
 
 interface ModalConfirmScoreProps {
     showConfirmModal: boolean;
     setShowConfirmModal: (visible: boolean) => void;
-    team: {
-        name: string;
-        code: string;
-    };
+    team: Partial<TeamsOfflineStorage>;
     fishRecord: FishRecord;
     handleConfirmSubmit: () => void;
 }
@@ -28,7 +25,7 @@ export function ModalConfirmScore({showConfirmModal, setShowConfirmModal, team, 
                     <ScrollView style={styles.modalScroll}>
                         <View style={styles.modalSection}>
                             <Text style={styles.modalSectionTitle}>Time</Text>
-                            <Text style={styles.modalText}>Nome: {team.name}</Text>
+                            <Text style={styles.modalText}>Nome: {team.team_name}</Text>
                             <Text style={styles.modalText}>Código: {team.code}</Text>
                         </View>
 

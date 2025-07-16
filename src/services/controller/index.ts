@@ -1,7 +1,7 @@
 import {
     ApiResponse,
     ControllerResponse,
-    fishOfflineStorage,
+    FishData,
     LoginData,
     OfflineStorageData,
     TeamsOfflineStorage,
@@ -18,23 +18,23 @@ async function isOnline(): Promise<boolean> {
     return !!state.isConnected;
 }
 
-function serializeTeams(data: any[]): TeamsOfflineStorage[] {
+function serializeTeams(data: any): TeamsOfflineStorage[] {
     return data.map((team: any) => ({
         id: team.id,
         code: team.code,
         team_name: team.team_name,
-        id_member_1: team[0]?.id || 0,
-        name_member_1: team[0]?.name || '',
-        id_member_2: team[1]?.id,
-        name_member_2: team[1]?.name || '',
-        id_member_3: team[2]?.id,
-        name_member_3: team[2]?.name || '',
-        id_member_4: team[3]?.id,
-        name_member_4: team[3]?.name || '',
+        id_member_1: team.members[0]?.id || 0,
+        name_member_1: team.members[0]?.name || '',
+        id_member_2: team.members[1]?.id,
+        name_member_2: team.members[1]?.name || '',
+        id_member_3: team.members[2]?.id,
+        name_member_3: team.members[2]?.name || '',
+        id_member_4: team.members[3]?.id,
+        name_member_4: team.members[3]?.name || '',
     }));
 }
 
-function serializeFish(data: any[]): fishOfflineStorage[] {
+function serializeFish(data: any[]): FishData[] {
     return data.map((fish: any) => ({
         id: fish.id,
         species: fish.species,
@@ -95,6 +95,8 @@ export class TeamsService {
             const response: ApiResponse = await apiService.get();
 
             const teams = serializeTeams(response?.data);
+            console.log("data formatado", teams);
+            
             const offlineData: OfflineStorageData = {
                 column: 'teams',
                 value: teams,
@@ -111,7 +113,25 @@ export class TeamsService {
             console.error('Erro ao buscar equipes:', error);
             return {
                 success: false,
-                message: error?.message || 'ao obter equipes',
+                message: error?.message || 'Erro ao obter as equipes',
+                data: null,
+            };
+        }
+    }
+
+    async getTeamByCode(code: string): Promise<ControllerResponse> {
+        try {
+            const team = await offlineStorage.getTeamByCode(code);
+            return {
+                success: true,
+                message: "Equipe obtida do armazenamento offline!",
+                data: team,
+            };
+        } catch (error: any) {
+            console.error('Erro ao busca a equipe:', error);
+            return {
+                success: false,
+                message: error?.message || 'Erro ao obter a equipe',
                 data: null,
             };
         }

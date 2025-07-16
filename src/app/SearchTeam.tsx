@@ -22,12 +22,6 @@ import { getUser } from '../services/storage';
 type SearchTeamNavigationProp = NativeStackNavigationProp<RootStackParamList, 'SearchTeam'>;
 
 // Mock data - substitua pela sua API
-const mockTeams: Team[] = [
-    { id: '1', name: 'Pescadores Unidos', code: 'PU001' },
-    { id: '2', name: 'Anzol Dourado', code: 'AD002' },
-    { id: '3', name: 'Maré Alta', code: 'MA003' },
-    { id: '4', name: 'Iscas & Companhia', code: 'IC004' },
-];
 
 export default function SearchTeam() {
     const navigation = useNavigation<SearchTeamNavigationProp>();
@@ -84,35 +78,31 @@ export default function SearchTeam() {
 
         setIsSearching(true);
 
-        try {
-            // Simula chamada API
-            await new Promise((resolve) => setTimeout(resolve, 1000));
-            const foundTeam = mockTeams.find((team) => team.code === code);
+        const foundTeam = await teamsService.getTeamByCode(code)
 
-            if (foundTeam) {
-                navigation.navigate('RegisterScore', { team: encodeURIComponent(JSON.stringify(foundTeam)) });
-
-            } else {
-                Alert.alert('Time não encontrado', 'Verifique o código e tente novamente');
-            }
-        } catch (error) {
-            Alert.alert('Erro', 'Falha na busca do time');
-        } finally {
+        if (!foundTeam.data) {
+            Alert.alert('Time não encontrado', 'Verifique o código e tente novamente');
             setIsSearching(false);
+            return
         }
+        setIsSearching(false);
+        navigation.navigate('RegisterScore', { team: encodeURIComponent(JSON.stringify(foundTeam.data)) });
     };
 
-    const handleBarCodeScanned = (type: string, data: string) => {
+    const handleBarCodeScanned = async (type: string, data: string) => {
         setShowScanner(false);
         const code = data.toUpperCase();
         setTeamCode(code);
 
-        const foundTeam = mockTeams.find((team) => team.code === code);
-        if (foundTeam) {
-            navigation.navigate('RegisterScore', { team: encodeURIComponent(JSON.stringify(foundTeam)) });
-        } else {
-            Alert.alert('Time não encontrado', 'QR Code não corresponde a nenhum time cadastrado');
+        const foundTeam = await teamsService.getTeamByCode(code)
+
+        if (!foundTeam.data) {
+            Alert.alert('Time não encontrado', 'Verifique o código e tente novamente');
+            setIsSearching(false);
+            return
         }
+        setIsSearching(false);
+        navigation.navigate('RegisterScore', { team: encodeURIComponent(JSON.stringify(foundTeam.data)) });
     };
 
     return (

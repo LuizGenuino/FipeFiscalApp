@@ -51,7 +51,7 @@ class OfflineStorage {
         if (data.column !== 'teams') return;
 
         const db = this.getDb();
-        await db.execAsync('DELETE FROM teams');
+        await db.runAsync('DELETE FROM teams');
 
 
         for (const item of data.value) {
@@ -86,7 +86,7 @@ class OfflineStorage {
         if (data.column !== 'fish') return;
 
         const db = this.getDb();
-        await db.execAsync('DELETE FROM fish');
+        await db.runAsync('DELETE FROM fish');
 
 
         for (const item of data.value) {
@@ -110,6 +110,11 @@ class OfflineStorage {
         return await db.getAllAsync('SELECT * FROM teams');
     }
 
+    async getTeamByCode(code: string) {
+        const db = this.getDb();
+        return await db.getFirstAsync('SELECT * FROM teams WHERE code = ?', [code]);
+    }
+
     // Recupera todos os peixes
     async getAllFish() {
         const db = this.getDb();
@@ -121,9 +126,9 @@ class OfflineStorage {
         const db = this.getDb();
 
         if (column === 'teams') {
-            await db.execAsync('DELETE FROM teams');
+            await db.runAsync('DELETE FROM teams');
         } else if (column === 'fish') {
-            await db.execAsync('DELETE FROM fish');
+            await db.runAsync('DELETE FROM fish');
         } else {
             console.warn(`Coluna desconhecida: ${column}`);
         }

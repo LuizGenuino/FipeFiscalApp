@@ -20,74 +20,74 @@ export function Select({ options, selectedValue, onValueChange, placeholder = "S
 
     const [modalVisible, setModalVisible] = useState(false);
 
-    const selectedItem = options.find((item) => item.value === selectedValue);
+    const selectedItem = options.find((item) => item.value.toString() === selectedValue);
 
     return (
-       <View style={styles.container}>
-      <TouchableOpacity style={styles.select} onPress={() => setModalVisible(true)}>
-        <Text style={selectedItem ? styles.text : styles.placeholder}>
-          {selectedItem ? selectedItem.label : placeholder}
-        </Text>
-      </TouchableOpacity>
+        <View style={styles.container}>
+            <TouchableOpacity style={styles.select} onPress={() => setModalVisible(true)}>
+                <Text style={selectedItem ? styles.text : styles.placeholder}>
+                    {selectedItem ? selectedItem.label : placeholder}
+                </Text>
+            </TouchableOpacity>
 
-      <Modal animationType="fade" transparent visible={modalVisible} onRequestClose={() => setModalVisible(false)}>
-        <Pressable style={styles.modalOverlay} onPress={() => setModalVisible(false)}>
-          <View style={styles.modalContent}>
-            <FlatList
-              data={options}
-              keyExtractor={(item) => item.value.toString()}
-              renderItem={({ item }) => (
-                <TouchableOpacity
-                  style={styles.option}
-                  onPress={() => {
-                    onValueChange(item.value);
-                    setModalVisible(false);
-                  }}
-                >
-                  <Text>{item.label}</Text>
-                </TouchableOpacity>
-              )}
-            />
-          </View>
-        </Pressable>
-      </Modal>
-    </View>
+            <Modal animationType="fade" transparent visible={modalVisible} onRequestClose={() => setModalVisible(false)}>
+                <Pressable style={styles.modalOverlay} onPress={() => setModalVisible(false)}>
+                    <View style={styles.modalContent}>
+                        <FlatList
+                            data={options}
+                            keyExtractor={(item) => item.value.toString()}
+                            renderItem={({ item }) => (
+                                <TouchableOpacity
+                                    style={styles.option}
+                                    onPress={() => {
+                                        onValueChange(item.value);
+                                        setModalVisible(false);
+                                    }}
+                                >
+                                    <Text>{item.label}</Text>
+                                </TouchableOpacity>
+                            )}
+                        />
+                    </View>
+                </Pressable>
+            </Modal>
+        </View>
     );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    width: '100%',
-  },
-  select: {
-    borderWidth: 0.1,
-    borderColor: '#ccc',
-    padding: 12,
-    borderRadius: 8,
-    justifyContent: 'center',
-  },
-  text: {
-    fontSize: 16,
-  },
-  placeholder: {
-    fontSize: 16,
-    color: '#999',
-  },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.3)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  modalContent: {
-    width: '80%',
-    backgroundColor: 'white',
-    borderRadius: 8,
-    maxHeight: 300,
-  },
-  option: {
-    padding: 15,
-    borderBottomWidth: 1,
-    borderBottomColor: '#eee',
-  },
+    container: {
+        width: '100%',
+    },
+    select: {
+        borderWidth: 0.1,
+        borderColor: '#ccc',
+        padding: 12,
+        borderRadius: 8,
+        justifyContent: 'center',
+    },
+    text: {
+        fontSize: 16,
+    },
+    placeholder: {
+        fontSize: 16,
+        color: '#999',
+    },
+    modalOverlay: {
+        flex: 1,
+        backgroundColor: 'rgba(0,0,0,0.3)',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    modalContent: {
+        width: '80%',
+        backgroundColor: 'white',
+        borderRadius: 8,
+        maxHeight: 300,
+    },
+    option: {
+        padding: 15,
+        borderBottomWidth: 1,
+        borderBottomColor: '#eee',
+    },
 });

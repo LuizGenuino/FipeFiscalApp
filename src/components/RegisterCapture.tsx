@@ -179,6 +179,7 @@ const styles = StyleSheet.create({
         height: 300,
         borderRadius: 8,
         marginBottom: 12,
+        objectFit: "contain"
     },
     mediaButtonsContainer: {
         flexDirection: "row",

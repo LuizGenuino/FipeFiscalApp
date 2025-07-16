@@ -10,8 +10,20 @@ export type Team = {
     code: string;
 }
 
-export type FishRecord = {
+export type Members = {
+    id: string;
+    name: string;
+}
+
+export type FishData = {
+    id: number;
     species: string;
+    photo: string;
+    point: number;
+}
+
+export type FishRecord = {
+    species: number | null;
     size: string;
     ticketNumber: string;
     teamMember: string;
@@ -54,14 +66,7 @@ export type TeamsOfflineStorage = {
     name_member_4?: string;
 }
 
-export type fishOfflineStorage = {
-    id: string;
-    species: string;
-    photo: string;
-    point: number;
-}
-
 export type OfflineStorageData = {
     column: string;
-    value: TeamsOfflineStorage[] | fishOfflineStorage[] | any[];
+    value: TeamsOfflineStorage[] | FishData[] | any[];
 }
