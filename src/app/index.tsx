@@ -15,6 +15,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { AuthService } from '../services/controller';
 import { getUser } from '../services/storage';
+import { useLoading } from "@/src/contexts/LoadingContext";
 
 export default function LoginScreen() {
     const router = useRouter();
@@ -22,6 +23,7 @@ export default function LoginScreen() {
     const [password, setPassword] = useState('123456789');
     const [isLoading, setIsLoading] = useState(false);
     const authService = new AuthService()
+    const { setLoading } = useLoading();
 
     useEffect(() => {
         verifyAuth()
@@ -30,12 +32,16 @@ export default function LoginScreen() {
 
     const verifyAuth = async () => {
         try {
+            setLoading(true);
             const userAuth: any = await getUser()
             if (JSON.parse(userAuth).id) {
                 router.push('/SearchTeam');
+            } else {
+                setLoading(false);
             }
 
         } catch (error) {
+            setLoading(false);
             console.error('Erro ao verificar autenticação:', error);
             // Se não houver usuário autenticado, nada acontece e o usuário permanece na tela de login
         }
@@ -56,12 +62,14 @@ export default function LoginScreen() {
             return;
         }
         setIsLoading(true);
+        setLoading(true);
         const reponse = await authService.Login({ email, password })
 
         if (!reponse.success) {
             Alert.alert('Tente Novamente', reponse.message);
             authService.Logout()
             setIsLoading(false);
+            setLoading(false);
             return;
         }
         setIsLoading(false);

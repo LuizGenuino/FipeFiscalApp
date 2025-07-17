@@ -18,6 +18,7 @@ import { useNavigation } from '@react-navigation/native'; // hook moderno React 
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { TeamsService, FishService } from '../services/controller';
 import { getUser } from '../services/storage';
+import { useLoading } from "@/src/contexts/LoadingContext";
 
 type SearchTeamNavigationProp = NativeStackNavigationProp<RootStackParamList, 'SearchTeam'>;
 
@@ -29,18 +30,23 @@ export default function SearchTeam() {
     const [isSearching, setIsSearching] = useState(false);
     const [showScanner, setShowScanner] = useState(false);
     const teamsService = new TeamsService()
+    const { setLoading } = useLoading();
 
     useEffect(() => {
-        checkAuth();
-        getAllTeams();
-        getFishList();
+        initialize()
     }, []);
+
+    const initialize = async () => {
+        await checkAuth();
+        await getAllTeams();
+        await getFishList();
+        await setLoading(false);
+    }
 
     const checkAuth = async () => {
         try {
             const userAuth: any = await getUser();
             if (!userAuth || !JSON.parse(userAuth).id) {
-                Alert.alert('Atenção', 'Você precisa estar logado para acessar esta tela');
                 navigation.navigate('Login');
             }
         } catch (error) {
