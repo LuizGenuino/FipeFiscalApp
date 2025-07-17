@@ -12,7 +12,6 @@ import {
 } from "react";
 import {
     Keyboard,
-    Modal,
     StyleSheet,
     Text,
     TouchableOpacity,
@@ -38,7 +37,7 @@ export function Camera({ type, onMediaCaptured, active, onClose }: CameraCompone
     const [isRecording, setIsRecording] = useState(false);
     const [recordingTime, setRecordingTime] = useState(0);
     const intervalRef = useRef<any>(null);
-    const scannedRef = useRef(false); // evita múltiplas leituras de QR
+    const scannedRef = useRef(false);
 
     useEffect(() => {
         Keyboard.dismiss();
@@ -90,58 +89,66 @@ export function Camera({ type, onMediaCaptured, active, onClose }: CameraCompone
 
     return (
         <View style={styles.cameraContainer}>
-            <CameraView
-                ref={cameraRef}
-                style={styles.camera}
-                facing="back"
-                active={active}
-                mode={type === "video" ? "video" : "picture"}
-                barcodeScannerSettings={type === "qrcode" ? { barcodeTypes: ["qr"] } : undefined}
-                onBarcodeScanned={type === "qrcode" ? handleQRCodeScanned : undefined}
-            />
-            {type === "qrcode" ? (
-                <View style={styles.scannerOverlay}>
-                    <View style={styles.scannerFrame} />
-                    <Text style={styles.scannerText}>Posicione o QR Code dentro do quadro</Text>
-                    <TouchableOpacity style={styles.cancelButton} onPress={onClose}>
-                        <Text style={styles.cancelButtonText}>Cancelar</Text>
-                    </TouchableOpacity>
-                </View>
-            ) : (
-                <View style={styles.cameraOverlay}>
-                    <TouchableOpacity style={styles.closeButton} onPress={onClose}>
-                        <Ionicons name="close" size={30} color="#fff" />
-                    </TouchableOpacity>
+            {/* Câmera com zIndex menor */}
+            <View style={styles.cameraWrapper}>
+                <CameraView
+                    ref={cameraRef}
+                    style={styles.camera}
+                    facing="back"
+                    mute
+                    active={active}
+                    mode={type === "video" ? "video" : "picture"}
+                    barcodeScannerSettings={type === "qrcode" ? { barcodeTypes: ["qr"] } : undefined}
+                    onBarcodeScanned={type === "qrcode" ? handleQRCodeScanned : undefined}
+                />
+            </View>
 
-                    {isRecording && (
-                        <View style={styles.timerContainer}>
-                            <Text style={styles.timerText}>
-                                {Math.floor(recordingTime / 60)}:
-                                {String(recordingTime % 60).padStart(2, "0")}
-                            </Text>
-                        </View>
-                    )}
-
-                    <View style={styles.cameraControls}>
-                        <TouchableOpacity
-                            style={[styles.captureButton, isRecording && styles.recordingButton]}
-                            onPress={type === "photo" ? takePicture : recordVideo}
-                        >
-                            <Ionicons
-                                name={
-                                    type === "photo"
-                                        ? "camera"
-                                        : isRecording
-                                            ? "stop"
-                                            : "videocam"
-                                }
-                                size={30}
-                                color="#fff"
-                            />
+            {/* Overlay com os botões, sobrepondo a câmera */}
+            <View style={styles.overlay} pointerEvents="box-none">
+                {type === "qrcode" ? (
+                    <View style={styles.scannerOverlay}>
+                        <View style={styles.scannerFrame} />
+                        <Text style={styles.scannerText}>Posicione o QR Code dentro do quadro</Text>
+                        <TouchableOpacity style={styles.cancelButton} onPress={onClose}>
+                            <Text style={styles.cancelButtonText}>Cancelar</Text>
                         </TouchableOpacity>
                     </View>
-                </View>
-            )}
+                ) : (
+                    <View style={styles.cameraOverlay}>
+                        <TouchableOpacity style={styles.closeButton} onPress={onClose}>
+                            <Ionicons name="close" size={30} color="#fff" />
+                        </TouchableOpacity>
+
+                        {isRecording && (
+                            <View style={styles.timerContainer}>
+                                <Text style={styles.timerText}>
+                                    {Math.floor(recordingTime / 60)}:
+                                    {String(recordingTime % 60).padStart(2, "0")}
+                                </Text>
+                            </View>
+                        )}
+
+                        <View style={styles.cameraControls}>
+                            <TouchableOpacity
+                                style={[styles.captureButton, isRecording && styles.recordingButton]}
+                                onPress={type === "photo" ? takePicture : recordVideo}
+                            >
+                                <Ionicons
+                                    name={
+                                        type === "photo"
+                                            ? "camera"
+                                            : isRecording
+                                                ? "stop"
+                                                : "videocam"
+                                    }
+                                    size={30}
+                                    color="#fff"
+                                />
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+                )}
+            </View>
         </View>
     );
 }
@@ -151,21 +158,28 @@ const styles = StyleSheet.create({
         position: "absolute",
         width: "100%",
         height: "100%",
-        top: 0, left: 0, right: 0, bottom: 0,
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
         zIndex: 99,
         backgroundColor: "#000",
         flex: 1,
     },
+    cameraWrapper: {
+        ...StyleSheet.absoluteFillObject,
+        zIndex: 1,
+    },
     camera: {
         flex: 1,
-        width: "100%",
-        height: "100%",
-        zIndex: 99
+    },
+    overlay: {
+        ...StyleSheet.absoluteFillObject,
+        zIndex: 2,
     },
     cameraOverlay: {
-        ...StyleSheet.absoluteFillObject,
+        flex: 1,
         justifyContent: "flex-end",
-        zIndex: 100
     },
     closeButton: {
         position: "absolute",
@@ -174,7 +188,7 @@ const styles = StyleSheet.create({
         backgroundColor: "rgba(0,0,0,0.5)",
         borderRadius: 20,
         padding: 8,
-        zIndex: 100,
+        zIndex: 10,
     },
     timerContainer: {
         position: "absolute",
@@ -194,7 +208,6 @@ const styles = StyleSheet.create({
     cameraControls: {
         alignItems: "center",
         paddingBottom: 50,
-        zIndex: 100,
     },
     captureButton: {
         backgroundColor: "#2563eb",
@@ -208,11 +221,10 @@ const styles = StyleSheet.create({
         backgroundColor: "#ef4444",
     },
     scannerOverlay: {
-        ...StyleSheet.absoluteFillObject,
+        flex: 1,
         justifyContent: "center",
         alignItems: "center",
-        backgroundColor: "trasparent",
-        zIndex: 100,
+        backgroundColor: "transparent",
     },
     scannerFrame: {
         width: 250,

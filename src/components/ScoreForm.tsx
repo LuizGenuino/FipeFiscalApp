@@ -37,7 +37,8 @@ export function ScoreForm({ fishRecord, setFishRecord, teamMembers }: ScoreFormP
     }, [])
 
     const getFishList = async () => {
-        const response = await fishService.getFishList()
+        const response = await fishService.getFishListOffline()
+        
         setFishSpecies(response.data)
         if (!response.success) {
             Alert.alert('Erro ao Buscar os Peixes', response.message);

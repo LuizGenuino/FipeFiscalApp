@@ -83,20 +83,18 @@ export class TeamsService {
     async getAllTeams(): Promise<ControllerResponse> {
         try {
             if (!(await isOnline())) {
-                const teams = await offlineStorage.getAllTeams();
                 return {
                     success: true,
-                    message: "Equipes obtidas do armazenamento offline!",
-                    data: teams,
+                    message: "Sem Acesso a Internet",
+                    data: null,
                 };
             }
-
             const apiService = new ApiService('/teams');
             const response: ApiResponse = await apiService.get();
 
             const teams = serializeTeams(response?.data);
-            console.log("data formatado", teams);
-            
+
+
             const offlineData: OfflineStorageData = {
                 column: 'teams',
                 value: teams,
@@ -109,6 +107,26 @@ export class TeamsService {
                 message: "Equipes obtidas com sucesso!",
                 data: response?.data,
             };
+        } catch (error: any) {
+            console.error('Erro ao buscar equipes:', error);
+            return {
+                success: false,
+                message: error?.message || 'Erro ao obter as equipes',
+                data: null,
+            };
+        }
+    }
+
+    async getAllTeamsOffline(): Promise<ControllerResponse> {
+        try {
+
+            const teams = await offlineStorage.getAllTeams();
+            return {
+                success: true,
+                message: "Equipes obtidas do armazenamento offline!",
+                data: teams,
+            };
+
         } catch (error: any) {
             console.error('Erro ao buscar equipes:', error);
             return {
@@ -142,14 +160,12 @@ export class FishService {
     async getFishList(): Promise<ControllerResponse> {
         try {
             if (!(await isOnline())) {
-                const fish = await offlineStorage.getAllFish();
                 return {
                     success: true,
-                    message: "Peixes obtidos do armazenamento offline!",
-                    data: fish,
+                    message: "Sem Acesso a Internet",
+                    data: null,
                 };
             }
-
             const apiService = new ApiService('/fish-list');
             const response: ApiResponse = await apiService.get();
 
@@ -166,6 +182,26 @@ export class FishService {
                 message: "Peixes obtidos com sucesso!",
                 data: response?.data,
             };
+        } catch (error: any) {
+            console.error('Erro ao buscar peixes:', error);
+            return {
+                success: false,
+                message: error?.message || 'Erro ao obter lista de peixes',
+                data: null,
+            };
+        }
+    }
+
+    async getFishListOffline(): Promise<ControllerResponse> {
+        try {
+
+            const fish = await offlineStorage.getAllFish();
+            return {
+                success: true,
+                message: "Peixes obtidos do armazenamento offline!",
+                data: fish,
+            };
+
         } catch (error: any) {
             console.error('Erro ao buscar peixes:', error);
             return {
