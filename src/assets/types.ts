@@ -45,8 +45,6 @@ export type ControllerResponse = {
     data: any;
 }
 
-
-
 export type LoginData = {
     email: string;
     password: string;
