@@ -1,7 +1,7 @@
 export type RootStackParamList = {
     Login: undefined;
     SearchTeam: undefined;
-    RegisterScore: { team: any };
+    RegisterScore: { team_code: string };
 };
 
 export type Team = {
@@ -16,15 +16,19 @@ export type Members = {
 }
 
 export type FishData = {
-    id: number;
     species: string;
-    photo: string;
+    photo: any;
     point: number;
+    minimumSize?: number;
 }
 
 export type FishRecord = {
-    species: number | null;
-    size: string;
+    id?: string | null | undefined;
+    code: string;
+    inspectorName: string;
+    species: string;
+    size: number;
+    point: number;
     ticketNumber: string;
     teamMember: string;
     fishPhoto: string;
@@ -48,8 +52,7 @@ export type ControllerResponse = {
 
 
 export type LoginData = {
-    email: string;
-    password: string;
+    inspectorName: string;
 }
 
 export type TeamsOfflineStorage = {

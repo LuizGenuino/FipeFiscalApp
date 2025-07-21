@@ -16,12 +16,13 @@ import { FishRecord, Members, TeamsOfflineStorage } from '../assets/types';
 
 export default function RegisterScore() {
     const router = useRouter();
-    const { team: teamParam } = useLocalSearchParams();
-
-    const [team, setTeam] = useState<TeamsOfflineStorage | null>(null);
+    const { team_code: teamCode } = useLocalSearchParams();
     const [fishRecord, setFishRecord] = useState<FishRecord>({
-        species: null,
-        size: '',
+        code: "",
+        inspectorName: "",
+        species: "",
+        size: 0,
+        point: 0,
         ticketNumber: '',
         teamMember: '',
         fishPhoto: '',
@@ -31,20 +32,21 @@ export default function RegisterScore() {
     const [showConfirmModal, setShowConfirmModal] = useState(false);
 
     useEffect(() => {
-        if (typeof teamParam === 'string') {
-            try {
-                const parsedTeam: TeamsOfflineStorage = JSON.parse(decodeURIComponent(teamParam));
-                setTeam(parsedTeam);
-            } catch (error) {
-                console.error('Erro ao parsear teamParam:', error);
-                Alert.alert('Erro', 'Dados do time inválidos');
-                router.back();
-            }
-        } else {
+        if (!teamCode) {
             Alert.alert('Erro', 'Parâmetro do time não encontrado');
             router.back();
         }
-    }, [teamParam, router]);
+
+        if (teamCode.length < 5) {
+            Alert.alert('Erro', 'Parâmetro do time não encontrado');
+            router.back();
+        }
+
+        if (typeof teamCode === 'string') {
+            setFishRecord({...fishRecord, code: teamCode})
+        }
+
+    }, [teamCode, router]);
 
     const validateForm = () => {
         if (!fishRecord.species) {
@@ -84,24 +86,6 @@ export default function RegisterScore() {
         }
     };
 
-    const teamMembersList = () => {
-        const teamMembersList: Members[] = [];
-        if (!team) return teamMembersList;
-
-        // const teamsObj = JSON.parse(team)
-
-        for (let i = 1; i <= 4; i++) {
-            const id = (team as any)[`id_member_${i}`];
-            const name = (team as any)[`name_member_${i}`];
-            teamMembersList.push({ id, name });
-
-        }
-
-        return teamMembersList;
-    }
-
-    if (!team) return null;
-
     return (
         <ScrollView style={styles.container}>
             <View style={styles.content}>
@@ -112,17 +96,13 @@ export default function RegisterScore() {
                     </View>
                     <View style={styles.cardContent}>
                         <Text style={styles.infoText}>
-                            <Text style={styles.infoLabel}>Nome: </Text>
-                            {team.team_name}
-                        </Text>
-                        <Text style={styles.infoText}>
-                            <Text style={styles.infoLabel}>Código: </Text>
-                            {team.code}
+                            <Text style={styles.infoLabel}>Código do Time: </Text>
+                            {teamCode}
                         </Text>
                     </View>
                 </View>
 
-                <ScoreForm fishRecord={fishRecord} setFishRecord={setFishRecord} teamMembers={teamMembersList()} />
+                <ScoreForm fishRecord={fishRecord} setFishRecord={setFishRecord} />
                 <RegisterCapture fishRecord={fishRecord} setFishRecord={setFishRecord} />
 
                 <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
@@ -134,7 +114,6 @@ export default function RegisterScore() {
             <ModalConfirmScore
                 showConfirmModal={showConfirmModal}
                 setShowConfirmModal={setShowConfirmModal}
-                team={team}
                 fishRecord={fishRecord}
                 handleConfirmSubmit={handleConfirmSubmit}
             />

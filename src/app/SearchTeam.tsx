@@ -14,18 +14,18 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { Camera } from '@/src/components/Camera';
 import { RootStackParamList, Team } from '../assets/types';
-import { useNavigation } from '@react-navigation/native'; // hook moderno React Navigation
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { TeamsService, FishService } from '../services/controller';
-import { getUser } from '../services/storage';
+import { clearUser, getUser } from '../services/storage';
 import { useLoading } from "@/src/contexts/LoadingContext";
+import { useRouter } from 'expo-router';
 
 type SearchTeamNavigationProp = NativeStackNavigationProp<RootStackParamList, 'SearchTeam'>;
 
 // Mock data - substitua pela sua API
 
 export default function SearchTeam() {
-    const navigation = useNavigation<SearchTeamNavigationProp>();
+     const router = useRouter();
     const [teamCode, setTeamCode] = useState('PU001');
     const [isSearching, setIsSearching] = useState(false);
     const [showScanner, setShowScanner] = useState(false);
@@ -38,42 +38,20 @@ export default function SearchTeam() {
 
     const initialize = async () => {
         await checkAuth();
-        await getAllTeams();
-        await getFishList();
         await setLoading(false);
     }
 
     const checkAuth = async () => {
         try {
             const userAuth: any = await getUser();
-            if (!userAuth || !JSON.parse(userAuth).id) {
-                navigation.navigate('Login');
+            if (!userAuth || !JSON.parse(userAuth)?.inspectorName) {
+                router.push('/');
             }
         } catch (error) {
             console.error('Erro ao verificar autenticação:', error);
             Alert.alert('Erro', 'Não foi possível verificar a autenticação');
         }
     };
-
-    const getAllTeams = async () => {
-        const response = await teamsService.getAllTeams();
-
-        if (!response.success) {
-            Alert.alert('Erro ao Buscar os Times', response.message);
-            return;
-        }
-
-    }
-
-    const getFishList = async () => {
-        const response = await new FishService().getFishList()
-
-        if (!response.success) {
-            Alert.alert('Erro ao Buscar os Peixes', response.message);
-            return;
-        }
-
-    }
 
     const handleSearch = async () => {
         const code = teamCode.trim().toUpperCase();
@@ -82,33 +60,29 @@ export default function SearchTeam() {
             return;
         }
 
-        setIsSearching(true);
-
-        const foundTeam = await teamsService.getTeamByCode(code)
-
-        if (!foundTeam.data) {
-            Alert.alert('Time não encontrado', 'Verifique o código e tente novamente');
-            setIsSearching(false);
-            return
+        if (code.length < 5) {
+            Alert.alert('Codigo Invalido', 'Por favor, digite o código do time valido!');
+            return;
         }
-        setIsSearching(false);
-        navigation.navigate('RegisterScore', { team: encodeURIComponent(JSON.stringify(foundTeam.data)) });
+
+        router.push({ pathname: '/RegisterScore', params: { team_code: code } });
     };
 
     const handleBarCodeScanned = async (type: string, data: string) => {
         setShowScanner(false);
         const code = data.toUpperCase();
+        if (!code) {
+            Alert.alert('Erro', 'Por favor, digite o código do time');
+            return;
+        }
+
+        if (code.length < 5) {
+            Alert.alert('Codigo Invalido', 'Por favor, digite o código do time valido!');
+            return;
+        }
         setTeamCode(code);
 
-        const foundTeam = await teamsService.getTeamByCode(code)
-
-        if (!foundTeam.data) {
-            Alert.alert('Time não encontrado', 'Verifique o código e tente novamente');
-            setIsSearching(false);
-            return
-        }
-        setIsSearching(false);
-        navigation.navigate('RegisterScore', { team: encodeURIComponent(JSON.stringify(foundTeam.data)) });
+         router.push({ pathname: '/RegisterScore', params: { team_code: code } });
     };
 
     return (
@@ -186,11 +160,11 @@ export default function SearchTeam() {
 const styles = StyleSheet.create({
     container: { flex: 1, backgroundColor: '#f0f9ff' },
     keyboardView: { flex: 1 },
-    scrollContent: { flexGrow: 1, justifyContent: 'center', paddingHorizontal: 24, paddingTop: 50 },
+    scrollContent: { flexGrow: 1, justifyContent: 'center', paddingHorizontal: 24, paddingTop: 50, alignItems: "center" },
     header: { alignItems: 'center', marginBottom: 40 },
     title: { fontSize: 26, fontWeight: 'bold', color: '#1e3a8a', marginTop: 12 },
     subtitle: { fontSize: 16, color: '#475569', marginTop: 8, textAlign: 'center' },
-    form: { width: '100%' },
+    form: { width: '100%', maxWidth: 350 },
     inputContainer: {
         flexDirection: 'row',
         alignItems: 'center',

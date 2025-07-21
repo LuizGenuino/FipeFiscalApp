@@ -18,7 +18,7 @@ export default function RootLayout() {
                     },
                 }}
             >
-                <Stack.Screen name="index" options={{ headerShown: false }} />
+                <Stack.Screen name="Index" options={{ headerShown: false }} />
                 <Stack.Screen name="SearchTeam" options={{ headerShown: false }} />
                 <Stack.Screen
                     name="RegisterScore"

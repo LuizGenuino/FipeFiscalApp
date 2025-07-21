@@ -4,12 +4,11 @@ import { FishRecord, TeamsOfflineStorage } from "../assets/types";
 interface ModalConfirmScoreProps {
     showConfirmModal: boolean;
     setShowConfirmModal: (visible: boolean) => void;
-    team: Partial<TeamsOfflineStorage>;
     fishRecord: FishRecord;
     handleConfirmSubmit: () => void;
 }
 
-export function ModalConfirmScore({showConfirmModal, setShowConfirmModal, team, fishRecord, handleConfirmSubmit}: ModalConfirmScoreProps) {
+export function ModalConfirmScore({showConfirmModal, setShowConfirmModal, fishRecord, handleConfirmSubmit}: ModalConfirmScoreProps) {
     return (
         <Modal
             visible={showConfirmModal}
@@ -25,8 +24,7 @@ export function ModalConfirmScore({showConfirmModal, setShowConfirmModal, team, 
                     <ScrollView style={styles.modalScroll}>
                         <View style={styles.modalSection}>
                             <Text style={styles.modalSectionTitle}>Time</Text>
-                            <Text style={styles.modalText}>Nome: {team.team_name}</Text>
-                            <Text style={styles.modalText}>Código: {team.code}</Text>
+                            <Text style={styles.modalText}>Código: {fishRecord.code}</Text>
                         </View>
 
                         <View style={styles.modalSection}>

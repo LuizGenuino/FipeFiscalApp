@@ -95,7 +95,6 @@ export function Camera({ type, onMediaCaptured, active, onClose }: CameraCompone
                     ref={cameraRef}
                     style={styles.camera}
                     facing="back"
-                    mute
                     active={active}
                     mode={type === "video" ? "video" : "picture"}
                     barcodeScannerSettings={type === "qrcode" ? { barcodeTypes: ["qr"] } : undefined}

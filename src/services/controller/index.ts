@@ -46,14 +46,12 @@ function serializeFish(data: any[]): FishData[] {
 export class AuthService {
     async Login(data: LoginData): Promise<ControllerResponse> {
         try {
-            const apiService = new ApiService('/login');
-            const response: ApiResponse = await apiService.post(data);
-            await storeUser(response?.data);
+            await storeUser({inspectorName: data.inspectorName});
 
             return {
                 success: true,
                 message: "Login realizado com sucesso!",
-                data: response?.data,
+                data: null,
             };
         } catch (error: any) {
             console.error('Login error:', error);

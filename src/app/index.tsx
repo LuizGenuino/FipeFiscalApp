@@ -17,10 +17,9 @@ import { AuthService } from '../services/controller';
 import { getUser } from '../services/storage';
 import { useLoading } from "@/src/contexts/LoadingContext";
 
-export default function LoginScreen() {
+export default function Login() {
     const router = useRouter();
-    const [email, setEmail] = useState('example@email.com');
-    const [password, setPassword] = useState('123456789');
+    const [inspectorName, setInspectorName] = useState('João Fernando Silva Souza Filho');
     const [isLoading, setIsLoading] = useState(false);
     const authService = new AuthService()
     const { setLoading } = useLoading();
@@ -34,7 +33,7 @@ export default function LoginScreen() {
         try {
             setLoading(true);
             const userAuth: any = await getUser()
-            if (JSON.parse(userAuth).id) {
+            if (JSON.parse(userAuth)?.inspectorName) {
                 router.push('/SearchTeam');
             } else {
                 setLoading(false);
@@ -49,21 +48,13 @@ export default function LoginScreen() {
 
 
     const handleLogin = async () => {
-        if (!email || !password) {
-            Alert.alert('Erro', 'Por favor, preencha todos os campos');
-            return;
-        }
-        if (!email.includes('@')) {
-            Alert.alert('Erro', 'Email Invalido ou Incorreto');
-            return;
-        }
-        if (!email.includes('@') || password.length < 6) {
-            Alert.alert('Erro', 'Senha Incorreta');
+        if (inspectorName.length < 4) {
+            Alert.alert('Erro', 'Digite o Nome Completo');
             return;
         }
         setIsLoading(true);
         setLoading(true);
-        const reponse = await authService.Login({ email, password })
+        const reponse = await authService.Login({ inspectorName })
 
         if (!reponse.success) {
             Alert.alert('Tente Novamente', reponse.message);
@@ -91,27 +82,14 @@ export default function LoginScreen() {
 
                 <View style={styles.form}>
                     <View style={styles.inputContainer}>
-                        <Ionicons name="mail" size={20} color="#666" style={styles.inputIcon} />
+                        <Ionicons name="person" size={20} color="#666" style={styles.inputIcon} />
                         <TextInput
                             style={styles.input}
-                            placeholder="Email"
-                            value={email}
-                            onChangeText={setEmail}
-                            keyboardType="email-address"
-                            autoCapitalize="none"
-                            autoCorrect={false}
-                        />
-                    </View>
-
-                    <View style={styles.inputContainer}>
-                        <Ionicons name="lock-closed" size={20} color="#666" style={styles.inputIcon} />
-                        <TextInput
-                            style={styles.input}
-                            placeholder="Senha"
-                            value={password}
-                            onChangeText={setPassword}
-                            secureTextEntry
-                            autoCapitalize="none"
+                            placeholder="Nome Cmpleto"
+                            value={inspectorName}
+                            onChangeText={setInspectorName}
+                            autoCapitalize="sentences"
+                            autoCorrect={true}
                         />
                     </View>
 
@@ -140,6 +118,7 @@ const styles = StyleSheet.create({
     content: {
         flex: 1,
         justifyContent: 'center',
+        alignItems: "center",
         paddingHorizontal: 20,
     },
     header: {
@@ -160,6 +139,7 @@ const styles = StyleSheet.create({
     },
     form: {
         width: '100%',
+        maxWidth: 350
     },
     inputContainer: {
         flexDirection: 'row',
