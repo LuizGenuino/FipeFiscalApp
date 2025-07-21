@@ -25,7 +25,7 @@ type SearchTeamNavigationProp = NativeStackNavigationProp<RootStackParamList, 'S
 // Mock data - substitua pela sua API
 
 export default function SearchTeam() {
-     const router = useRouter();
+    const router = useRouter();
     const [teamCode, setTeamCode] = useState('PU001');
     const [isSearching, setIsSearching] = useState(false);
     const [showScanner, setShowScanner] = useState(false);
@@ -33,25 +33,9 @@ export default function SearchTeam() {
     const { setLoading } = useLoading();
 
     useEffect(() => {
-        initialize()
+        setLoading(false)
     }, []);
 
-    const initialize = async () => {
-        await checkAuth();
-        await setLoading(false);
-    }
-
-    const checkAuth = async () => {
-        try {
-            const userAuth: any = await getUser();
-            if (!userAuth || !JSON.parse(userAuth)?.inspectorName) {
-                router.push('/');
-            }
-        } catch (error) {
-            console.error('Erro ao verificar autenticação:', error);
-            Alert.alert('Erro', 'Não foi possível verificar a autenticação');
-        }
-    };
 
     const handleSearch = async () => {
         const code = teamCode.trim().toUpperCase();
@@ -82,7 +66,7 @@ export default function SearchTeam() {
         }
         setTeamCode(code);
 
-         router.push({ pathname: '/RegisterScore', params: { team_code: code } });
+        router.push({ pathname: '/RegisterScore', params: { team_code: code } });
     };
 
     return (

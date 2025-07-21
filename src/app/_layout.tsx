@@ -1,12 +1,18 @@
 // app/_layout.tsx
-import { Stack } from "expo-router";
+import { Stack, usePathname } from "expo-router";
 import { LoadingProvider } from "@/src/contexts/LoadingContext";
 import LoadingModal from "@/src/components/LoadingModal";
+import AppBar from "../components/AppBar";
 
 export default function RootLayout() {
+
+    const pathname = usePathname();
+    const isLoginScreen = pathname === '/';
+
     return (
         <LoadingProvider>
             <LoadingModal />
+            {!isLoginScreen && <AppBar />}
             <Stack
                 screenOptions={{
                     headerStyle: {
@@ -22,7 +28,7 @@ export default function RootLayout() {
                 <Stack.Screen name="SearchTeam" options={{ headerShown: false }} />
                 <Stack.Screen
                     name="RegisterScore"
-                    options={{ title: "Registrar Pontuação", headerBackTitle: "Voltar" }}
+                    options={{ headerShown: false }}
                 />
             </Stack>
         </LoadingProvider>
