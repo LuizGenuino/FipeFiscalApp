@@ -38,7 +38,7 @@ export function ScoreForm({ fishRecord, setFishRecord }: ScoreFormProps) {
     const [minimumSizeError, setMinimumSizeError] = useState("");
 
     useEffect(() => {
-        if (!fishRecord.inspectorName) getInspectorName();
+        if (!fishRecord.registered_by) getInspectorName();
 
         if (fishRecord.species === "Jaú" && +fishRecord.size < 40) {
             setMinimumSizeError("O tamanho mínimo do Jaú é 40cm!");
@@ -58,7 +58,7 @@ export function ScoreForm({ fishRecord, setFishRecord }: ScoreFormProps) {
             const parsed = JSON.parse(data);
             if (!parsed?.inspectorName) {
                 Alert.alert("Nome invalido", parsed?.inspectorName)
-                router.push('/Index');
+                router.push('/');
                 return;
             }
             setFishRecord(prev => ({ ...prev, inspectorName: parsed.inspectorName }));
@@ -126,8 +126,8 @@ export function ScoreForm({ fishRecord, setFishRecord }: ScoreFormProps) {
                             style={[styles.input, errors.ticketNumber && styles.errorBorder]}
                             placeholder="Ex: 001"
                             placeholderTextColor="#9ca3af"
-                            value={fishRecord.ticketNumber}
-                            onChangeText={(value) => handleChange("ticketNumber", value)}
+                            value={fishRecord.ticket_number}
+                            onChangeText={(value) => handleChange("ticket_number", value)}
                             keyboardType="numeric"
                         />
                         {errors.ticketNumber && <Text style={styles.errorText}>Número da ficha é obrigatório.</Text>}

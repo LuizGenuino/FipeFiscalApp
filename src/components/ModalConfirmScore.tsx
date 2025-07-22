@@ -1,5 +1,7 @@
 import { Modal, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { FishRecord, TeamsOfflineStorage } from "../assets/types";
+import QRCode from "react-qr-code";
+
 
 interface ModalConfirmScoreProps {
     showConfirmModal: boolean;
@@ -8,7 +10,7 @@ interface ModalConfirmScoreProps {
     handleConfirmSubmit: () => void;
 }
 
-export function ModalConfirmScore({showConfirmModal, setShowConfirmModal, fishRecord, handleConfirmSubmit}: ModalConfirmScoreProps) {
+export function ModalConfirmScore({ showConfirmModal, setShowConfirmModal, fishRecord, handleConfirmSubmit }: ModalConfirmScoreProps) {
     return (
         <Modal
             visible={showConfirmModal}
@@ -18,36 +20,61 @@ export function ModalConfirmScore({showConfirmModal, setShowConfirmModal, fishRe
         >
             <View style={styles.modalOverlay}>
                 <View style={styles.modalContent}>
-                    <Text style={styles.modalTitle}>Confirmar Envio</Text>
-                    <Text style={styles.modalSubtitle}>Verifique os dados antes de confirmar</Text>
-
-                    <ScrollView style={styles.modalScroll}>
-                        <View style={styles.modalSection}>
-                            <Text style={styles.modalSectionTitle}>Time</Text>
-                            <Text style={styles.modalText}>Código: {fishRecord.code}</Text>
+                    <Text style={styles.modalTitle}>42º FIPE</Text>
+                    <Text style={styles.modalSubtitle}>Registro de Confirmação de Pesca</Text>
+                    <View style={styles.qrCodeCard} >
+                        <QRCode
+                            value={`https://google.com/${fishRecord.code}`}
+                        />
+                        <Text>{fishRecord.code}</Text>
+                    </View>
+                    <View style={styles.modalSection}>
+                        <Text style={styles.modalSectionTitle}>Pescado</Text>
+                        <View style={styles.row} >
+                            <Text style={styles.modalText}>Código:</Text>
+                            <Text style={[styles.modalText, {fontWeight: "bold"}]}>{fishRecord.team}</Text>
                         </View>
-
-                        <View style={styles.modalSection}>
-                            <Text style={styles.modalSectionTitle}>Dados do Peixe</Text>
-                            <Text style={styles.modalText}>Espécie: {fishRecord.species}</Text>
-                            <Text style={styles.modalText}>Tamanho: {fishRecord.size} CM</Text>
-                            <Text style={styles.modalText}>Nº Ficha: {fishRecord.ticketNumber}</Text>
-                            <Text style={styles.modalText}>Pescador: {fishRecord.teamMember}</Text>
+                        <View style={styles.row} >
+                            <Text style={styles.modalText}>Nº Ficha:</Text>
+                            <Text style={[styles.modalText, {fontWeight: "bold"}]}>{fishRecord.ticket_number}</Text>
                         </View>
+                        <View style={styles.row} >
+                            <Text style={styles.modalText}>Espécie: </Text>
+                            <Text style={[styles.modalText, {fontWeight: "bold"}]}>{fishRecord.species}</Text>
+                        </View>
+                        <View style={styles.row} >
+                            <Text style={styles.modalText}>Tamanho:</Text>
+                            <Text style={[styles.modalText, {fontWeight: "bold"}]}>{fishRecord.size} CM</Text>
+                        </View>
+                    </View>
 
-                        <View style={styles.modalSection}>
-                            <Text style={styles.modalSectionTitle}>Mídia</Text>
+                    <View style={styles.modalSection}>
+                        <Text style={styles.modalSectionTitle}>Mídia</Text>
+                        <View style={styles.row}>
                             <Text style={styles.modalText}>
-                                • Foto do peixe: {fishRecord.fishPhoto ? '✓' : '✗'}
+                                Foto da Ficha:
                             </Text>
                             <Text style={styles.modalText}>
-                                • Foto da ficha: {fishRecord.ticketPhoto ? '✓' : '✗'}
-                            </Text>
-                            <Text style={styles.modalText}>
-                                • Vídeo da soltura: {fishRecord.releaseVideo ? '✓' : '✗'}
+                                {fishRecord.card_image ? '✓' : 'x'}
                             </Text>
                         </View>
-                    </ScrollView>
+                        <View style={styles.row}>
+                            <Text style={styles.modalText}>
+                                Foto do Peixe: 
+                            </Text>
+                            <Text style={styles.modalText}>
+                            {fishRecord.card_image ? '✓' : 'x'}
+                            </Text>
+                        </View>
+                        <View style={styles.row}>
+                            <Text style={styles.modalText}>
+                                 Vídeo da soltura:
+                            </Text>
+                            <Text style={styles.modalText}>
+                                {fishRecord.card_image ? '✓' : 'x'}
+                            </Text>
+                        </View>
+                    </View>
 
                     <View style={styles.modalButtons}>
                         <TouchableOpacity
@@ -79,8 +106,8 @@ const styles = StyleSheet.create({
         backgroundColor: '#fff',
         borderRadius: 12,
         padding: 20,
-        width: '90%',
-        maxHeight: '80%',
+        width: 300,
+        maxHeight: '90%',
     },
     modalTitle: {
         fontSize: 20,
@@ -99,7 +126,7 @@ const styles = StyleSheet.create({
         maxHeight: 300,
     },
     modalSection: {
-        backgroundColor: '#f9fafb',
+        width: "100%",
         borderRadius: 8,
         padding: 12,
         marginBottom: 12,
@@ -108,7 +135,9 @@ const styles = StyleSheet.create({
         fontSize: 16,
         fontWeight: 'bold',
         color: '#374151',
-        marginBottom: 8,
+        marginBottom: 15,
+        marginTop: 15,
+        textAlign: "center"
     },
     modalText: {
         fontSize: 14,
@@ -146,5 +175,13 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         textAlign: 'center',
     },
+    qrCodeCard: {
+
+        alignItems: "center"
+    },
+    row: {
+        flexDirection: "row",
+        justifyContent: "space-between"
+    }
 });
 

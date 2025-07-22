@@ -112,22 +112,22 @@ export function RegisterCapture({ fishRecord, setFishRecord }: ScoreFormProps) {
         <View style={{ flex: 1 }}>
             {renderMediaSection(
                 "Foto do Peixe",
-                fishRecord.fishPhoto,
+                fishRecord.fish_image,
                 () => openCameraForPhoto("fish"),
-                () => removeMedia("fishPhoto")
+                () => removeMedia("fish_image")
             )}
             {renderMediaSection(
                 "Vídeo de Soltura",
-                fishRecord.releaseVideo,
+                fishRecord.fish_video,
                 openCameraForVideo,
-                () => removeMedia("releaseVideo"),
+                () => removeMedia("fish_video"),
                 true
             )}
             {renderMediaSection(
                 "Foto da Ficha",
-                fishRecord.ticketPhoto,
+                fishRecord.card_image,
                 () => openCameraForPhoto("ticket"),
-                () => removeMedia("ticketPhoto")
+                () => removeMedia("fish_video")
             )}
 
             {showCamera && (

@@ -13,21 +13,24 @@ import { ScoreForm } from '@/src/components/ScoreForm';
 import { RegisterCapture } from '@/src/components/RegisterCapture';
 import { ModalConfirmScore } from '@/src/components/ModalConfirmScore';
 import { FishRecord, Members, TeamsOfflineStorage } from '../assets/types';
+import { generateUniqueCode } from '../assets/randomCode';
+import * as Print from 'expo-print';
+import { PrintFormat } from '../assets/printFormart';
 
 export default function RegisterScore() {
     const router = useRouter();
     const { team_code: teamCode } = useLocalSearchParams();
     const [fishRecord, setFishRecord] = useState<FishRecord>({
         code: "",
-        inspectorName: "",
+        team: '',
+        registered_by: "",
         species: "",
         size: 0,
         point: 0,
-        ticketNumber: '',
-        teamMember: '',
-        fishPhoto: '',
-        ticketPhoto: '',
-        releaseVideo: '',
+        ticket_number: '',
+        card_image: '',
+        fish_image: '',
+        fish_video: '',
     });
     const [showConfirmModal, setShowConfirmModal] = useState(false);
 
@@ -43,7 +46,7 @@ export default function RegisterScore() {
         }
 
         if (typeof teamCode === 'string') {
-            setFishRecord({ ...fishRecord, code: teamCode })
+            setFishRecord({ ...fishRecord, team: teamCode })
         }
 
     }, [teamCode, router]);
@@ -57,7 +60,7 @@ export default function RegisterScore() {
             Alert.alert('Erro', 'Digite o tamanho do peixe');
             return false;
         }
-        if (!fishRecord.ticketNumber) {
+        if (!fishRecord.ticket_number) {
             Alert.alert('Erro', 'Digite o número da ficha');
             return false;
         }
@@ -66,12 +69,15 @@ export default function RegisterScore() {
 
     const handleSubmit = () => {
         if (!validateForm()) return;
+        setFishRecord({ ...fishRecord, code: generateUniqueCode() })
         setShowConfirmModal(true);
     };
 
     const handleConfirmSubmit = async () => {
         try {
-            await new Promise(resolve => setTimeout(resolve, 2000));
+            const html = PrintFormat({fishRecord});
+
+            await Print.printAsync({ html });
 
             setShowConfirmModal(false);
             Alert.alert('Sucesso', 'Registro enviado com sucesso!', [

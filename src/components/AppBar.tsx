@@ -40,7 +40,7 @@ export default function AppBar() {
     const logOut = async () => {
         try {
             await clearUser()
-            router.push('/Index');
+            router.push('/');
         } catch (error) {
             console.log("logOut error: ", error);
 

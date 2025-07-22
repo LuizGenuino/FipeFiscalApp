@@ -23,17 +23,16 @@ export type FishData = {
 }
 
 export type FishRecord = {
-    id?: string | null | undefined;
-    code: string;
-    inspectorName: string;
+    code: string | null | undefined;
+    team: string;
+    registered_by: string;
     species: string;
     size: number;
     point: number;
-    ticketNumber: string;
-    teamMember: string;
-    fishPhoto: string;
-    ticketPhoto: string;
-    releaseVideo: string;
+    ticket_number: string;
+    card_image: string;
+    fish_image: string;
+    fish_video: string;
 }
 
 export type ApiResponse = {
