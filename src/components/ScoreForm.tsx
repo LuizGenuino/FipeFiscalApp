@@ -58,7 +58,7 @@ export function ScoreForm({ fishRecord, setFishRecord }: ScoreFormProps) {
             const parsed = JSON.parse(data);
             if (!parsed?.inspectorName) {
                 Alert.alert("Nome invalido", parsed?.inspectorName)
-                router.push('/');
+                router.push('/Index');
                 return;
             }
             setFishRecord(prev => ({ ...prev, inspectorName: parsed.inspectorName }));

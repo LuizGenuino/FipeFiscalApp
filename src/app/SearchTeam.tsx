@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import {
     View,
     Text,
@@ -13,29 +13,17 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Camera } from '@/src/components/Camera';
-import { RootStackParamList, Team } from '../assets/types';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { TeamsService, FishService } from '../services/controller';
-import { clearUser, getUser } from '../services/storage';
 import { useLoading } from "@/src/contexts/LoadingContext";
 import { useRouter } from 'expo-router';
+import { useFocusEffect } from '@react-navigation/native';
 
-type SearchTeamNavigationProp = NativeStackNavigationProp<RootStackParamList, 'SearchTeam'>;
-
-// Mock data - substitua pela sua API
 
 export default function SearchTeam() {
     const router = useRouter();
     const [teamCode, setTeamCode] = useState('PU001');
-    const [isSearching, setIsSearching] = useState(false);
     const [showScanner, setShowScanner] = useState(false);
-    const teamsService = new TeamsService()
+    const [layoutLoaded, setLayoutLoaded] = useState(false);
     const { setLoading } = useLoading();
-
-    useEffect(() => {
-        setLoading(false)
-    }, []);
-
 
     const handleSearch = async () => {
         const code = teamCode.trim().toUpperCase();
@@ -70,7 +58,12 @@ export default function SearchTeam() {
     };
 
     return (
-        <View style={styles.container}>
+        <View style={styles.container} onLayout={() => {
+            if (!layoutLoaded) {
+                setLayoutLoaded(true);
+                setLoading(false); // só chama depois que a tela estiver pronta
+            }
+        }}>
             <KeyboardAvoidingView
                 behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
                 style={styles.keyboardView}
@@ -104,20 +97,14 @@ export default function SearchTeam() {
                         </View>
 
                         <TouchableOpacity
-                            style={[styles.button, (!teamCode || isSearching) && styles.buttonDisabled]}
+                            style={styles.button}
                             onPress={handleSearch}
-                            disabled={!teamCode || isSearching}
                             accessibilityLabel="Botão buscar time"
-                            accessibilityState={{ disabled: !teamCode || isSearching }}
                         >
-                            {isSearching ? (
-                                <ActivityIndicator color="#fff" />
-                            ) : (
-                                <>
-                                    <Ionicons name="search" size={20} color="#fff" style={styles.buttonIcon} />
-                                    <Text style={styles.buttonText}>Buscar Time</Text>
-                                </>
-                            )}
+
+                            <Ionicons name="search" size={20} color="#fff" style={styles.buttonIcon} />
+                            <Text style={styles.buttonText}>Buscar Time</Text>
+
                         </TouchableOpacity>
 
                         <View style={styles.divider}>

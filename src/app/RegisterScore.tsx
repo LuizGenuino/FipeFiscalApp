@@ -43,7 +43,7 @@ export default function RegisterScore() {
         }
 
         if (typeof teamCode === 'string') {
-            setFishRecord({...fishRecord, code: teamCode})
+            setFishRecord({ ...fishRecord, code: teamCode })
         }
 
     }, [teamCode, router]);
@@ -59,10 +59,6 @@ export default function RegisterScore() {
         }
         if (!fishRecord.ticketNumber) {
             Alert.alert('Erro', 'Digite o número da ficha');
-            return false;
-        }
-        if (!fishRecord.teamMember) {
-            Alert.alert('Erro', 'Selecione o membro da equipe');
             return false;
         }
         return true;

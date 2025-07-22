@@ -1,12 +1,18 @@
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { useRouter } from 'expo-router';
+import { usePathname, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { clearUser, getUser } from '../services/storage';
 import { Ionicons } from '@expo/vector-icons';
+import { useConnection } from '../contexts/connectionContext';
 
 export default function AppBar() {
     const router = useRouter();
+    const { connected } = useConnection();
     const [inspectorName, setInspectorName] = useState("")
+    const pathname = usePathname();
+
+    const isSearchTeamPage = pathname === "/SearchTeam"
+
 
 
     useEffect(() => {
@@ -34,7 +40,7 @@ export default function AppBar() {
     const logOut = async () => {
         try {
             await clearUser()
-            router.push('/');
+            router.push('/Index');
         } catch (error) {
             console.log("logOut error: ", error);
 
@@ -56,13 +62,21 @@ export default function AppBar() {
                 </TouchableOpacity>
             </View>
             <View style={styles.statusBar}>
-                <TouchableOpacity style={styles.buttonBack} onPress={() => router.back()}>
+                {!isSearchTeamPage && (<TouchableOpacity style={styles.buttonBack} onPress={() => router.back()}>
                     <Ionicons name="chevron-back" size={25} />
                     <Text>
                         Voltar
                     </Text>
-                </TouchableOpacity>
-                <Text>Conexão: { }</Text>
+                </TouchableOpacity>)}
+                <View style={styles.container}>
+                    <Text>Conexão:</Text>
+                    <View
+                        style={[
+                            styles.dot,
+                            { backgroundColor: connected ? '#22c55e' : '#ef4444' }, // verde ou vermelho
+                        ]}
+                    />
+                </View>
                 <Text> Sincronizado em: { }</Text>
             </View>
         </View>
@@ -110,5 +124,18 @@ const styles = StyleSheet.create({
         alignItems: "center",
         justifyContent: "center",
         padding: 5
-    }
+    },
+
+    container: {
+        flexDirection: "row",
+        padding: 8,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    dot: {
+        width: 16,
+        height: 16,
+        borderRadius: 8,
+        marginLeft: 4
+    },
 })

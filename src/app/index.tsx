@@ -17,7 +17,7 @@ import { AuthService } from '../services/controller';
 import { getUser } from '../services/storage';
 import { useLoading } from "@/src/contexts/LoadingContext";
 
-export default function Login() {
+export default function Index() {
     const router = useRouter();
     const [inspectorName, setInspectorName] = useState('João Fernando Silva Souza Filho');
     const [isLoading, setIsLoading] = useState(false);
