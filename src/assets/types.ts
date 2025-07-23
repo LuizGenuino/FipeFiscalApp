@@ -33,6 +33,7 @@ export type FishRecord = {
     card_image: string;
     fish_image: string;
     fish_video: string;
+    synchronized?: boolean;
 }
 
 export type ApiResponse = {

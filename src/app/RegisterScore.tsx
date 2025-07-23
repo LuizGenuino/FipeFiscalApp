@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
     View,
     Text,
@@ -17,7 +17,13 @@ import { generateUniqueCode } from '../assets/randomCode';
 import * as Print from 'expo-print';
 import { PrintFormat } from '../assets/printFormart';
 
+type QRCodeRef = {
+    toDataURL: (callback: (dataURL: string) => void) => void;
+  };
+
 export default function RegisterScore() {
+    const qrRef = useRef<QRCodeRef | null>(null);
+
     const router = useRouter();
     const { team_code: teamCode } = useLocalSearchParams();
     const [fishRecord, setFishRecord] = useState<FishRecord>({
@@ -71,14 +77,37 @@ export default function RegisterScore() {
         if (!validateForm()) return;
         setFishRecord({ ...fishRecord, code: generateUniqueCode() })
         setShowConfirmModal(true);
+
+    }
+
+
+    const handlePrint = async () => {
+
+        if (!qrRef.current) return;
+        
+
+        qrRef.current.toDataURL(async (dataURL) => {
+            const html = PrintFormat({ fishRecord, dataURL });
+
+            try {
+                await Print.printAsync({ html });
+                setShowConfirmModal(false);
+                Alert.alert('Sucesso', 'Registro enviado com sucesso!', [
+                    { text: 'OK', onPress: () => router.back() },
+                ]);
+            } catch (err) {
+                console.error("Erro ao imprimir:", err);
+            }
+        });
+    };
+
+    const onConfirmAndPrint = async () => {
+        await handlePrint();
+        handleConfirmSubmit();
     };
 
     const handleConfirmSubmit = async () => {
         try {
-            const html = PrintFormat({fishRecord});
-
-            await Print.printAsync({ html });
-
             setShowConfirmModal(false);
             Alert.alert('Sucesso', 'Registro enviado com sucesso!', [
                 { text: 'OK', onPress: () => router.back() },
@@ -117,7 +146,8 @@ export default function RegisterScore() {
                 showConfirmModal={showConfirmModal}
                 setShowConfirmModal={setShowConfirmModal}
                 fishRecord={fishRecord}
-                handleConfirmSubmit={handleConfirmSubmit}
+                handleConfirmSubmit={onConfirmAndPrint}
+                qrRef={qrRef}
             />
         </ScrollView>
     );

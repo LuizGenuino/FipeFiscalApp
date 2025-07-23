@@ -1,6 +1,6 @@
 import { Modal, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { FishRecord, TeamsOfflineStorage } from "../assets/types";
-import QRCode from "react-qr-code";
+import QRCode from "react-native-qrcode-svg";
 
 
 interface ModalConfirmScoreProps {
@@ -8,9 +8,11 @@ interface ModalConfirmScoreProps {
     setShowConfirmModal: (visible: boolean) => void;
     fishRecord: FishRecord;
     handleConfirmSubmit: () => void;
+    qrRef: any
 }
 
-export function ModalConfirmScore({ showConfirmModal, setShowConfirmModal, fishRecord, handleConfirmSubmit }: ModalConfirmScoreProps) {
+export function ModalConfirmScore({ showConfirmModal, setShowConfirmModal, fishRecord, handleConfirmSubmit, qrRef }: ModalConfirmScoreProps) {
+
     return (
         <Modal
             visible={showConfirmModal}
@@ -25,6 +27,8 @@ export function ModalConfirmScore({ showConfirmModal, setShowConfirmModal, fishR
                     <View style={styles.qrCodeCard} >
                         <QRCode
                             value={`https://google.com/${fishRecord.code}`}
+                            size={200}
+                            getRef={(c) => (qrRef.current = c)}
                         />
                         <Text>{fishRecord.code}</Text>
                     </View>
@@ -32,19 +36,23 @@ export function ModalConfirmScore({ showConfirmModal, setShowConfirmModal, fishR
                         <Text style={styles.modalSectionTitle}>Pescado</Text>
                         <View style={styles.row} >
                             <Text style={styles.modalText}>Código:</Text>
-                            <Text style={[styles.modalText, {fontWeight: "bold"}]}>{fishRecord.team}</Text>
+                            <Text style={[styles.modalText, { fontWeight: "bold" }]}>{fishRecord.team}</Text>
                         </View>
                         <View style={styles.row} >
                             <Text style={styles.modalText}>Nº Ficha:</Text>
-                            <Text style={[styles.modalText, {fontWeight: "bold"}]}>{fishRecord.ticket_number}</Text>
+                            <Text style={[styles.modalText, { fontWeight: "bold" }]}>{fishRecord.ticket_number}</Text>
                         </View>
                         <View style={styles.row} >
                             <Text style={styles.modalText}>Espécie: </Text>
-                            <Text style={[styles.modalText, {fontWeight: "bold"}]}>{fishRecord.species}</Text>
+                            <Text style={[styles.modalText, { fontWeight: "bold" }]}>{fishRecord.species}</Text>
                         </View>
                         <View style={styles.row} >
                             <Text style={styles.modalText}>Tamanho:</Text>
-                            <Text style={[styles.modalText, {fontWeight: "bold"}]}>{fishRecord.size} CM</Text>
+                            <Text style={[styles.modalText, { fontWeight: "bold" }]}>{fishRecord.size} Cm</Text>
+                        </View>
+                        <View style={styles.row} >
+                            <Text style={styles.modalText}>Pontuação:</Text>
+                            <Text style={[styles.modalText, { fontWeight: "bold" }]}>{fishRecord.point} Pts</Text>
                         </View>
                     </View>
 
@@ -60,15 +68,15 @@ export function ModalConfirmScore({ showConfirmModal, setShowConfirmModal, fishR
                         </View>
                         <View style={styles.row}>
                             <Text style={styles.modalText}>
-                                Foto do Peixe: 
+                                Foto do Peixe:
                             </Text>
                             <Text style={styles.modalText}>
-                            {fishRecord.card_image ? '✓' : 'x'}
+                                {fishRecord.card_image ? '✓' : 'x'}
                             </Text>
                         </View>
                         <View style={styles.row}>
                             <Text style={styles.modalText}>
-                                 Vídeo da soltura:
+                                Vídeo da soltura:
                             </Text>
                             <Text style={styles.modalText}>
                                 {fishRecord.card_image ? '✓' : 'x'}
