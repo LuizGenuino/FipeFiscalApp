@@ -12,16 +12,20 @@ import { Ionicons } from '@expo/vector-icons';
 import { ScoreForm } from '@/src/components/ScoreForm';
 import { RegisterCapture } from '@/src/components/RegisterCapture';
 import { ModalConfirmScore } from '@/src/components/ModalConfirmScore';
-import { FishRecord, Members, TeamsOfflineStorage } from '../assets/types';
+import { FishRecord } from '../assets/types';
 import { generateUniqueCode } from '../assets/randomCode';
 import * as Print from 'expo-print';
+import * as FileSystem from 'expo-file-system';
 import { PrintFormat } from '../assets/printFormart';
+import { FishRecordService } from '../services/controller';
+import { useLoading } from '../contexts/LoadingContext';
 
 type QRCodeRef = {
     toDataURL: (callback: (dataURL: string) => void) => void;
-  };
+};
 
 export default function RegisterScore() {
+    const { setLoading } = useLoading();
     const qrRef = useRef<QRCodeRef | null>(null);
 
     const router = useRouter();
@@ -37,6 +41,7 @@ export default function RegisterScore() {
         card_image: '',
         fish_image: '',
         fish_video: '',
+        synchronized: false
     });
     const [showConfirmModal, setShowConfirmModal] = useState(false);
 
@@ -84,7 +89,7 @@ export default function RegisterScore() {
     const handlePrint = async () => {
 
         if (!qrRef.current) return;
-        
+
 
         qrRef.current.toDataURL(async (dataURL) => {
             const html = PrintFormat({ fishRecord, dataURL });
@@ -102,20 +107,56 @@ export default function RegisterScore() {
     };
 
     const onConfirmAndPrint = async () => {
-        await handlePrint();
-        handleConfirmSubmit();
+        setLoading(true);
+        await handleConfirmSubmit();
+        // await handlePrint();
     };
 
     const handleConfirmSubmit = async () => {
         try {
-            setShowConfirmModal(false);
-            Alert.alert('Sucesso', 'Registro enviado com sucesso!', [
-                { text: 'OK', onPress: () => router.back() },
-            ]);
+            await saveMediaLocally(`fish_image_${fishRecord.code}.jpg`, fishRecord.fish_image)
+            await saveMediaLocally(`card_image_${fishRecord.code}.jpg`, fishRecord.card_image)
+            await saveMediaLocally(`fish_video_${fishRecord.code}.jpg`, fishRecord.fish_video)
+
+            const fishRecordService = new FishRecordService()
+            const result = await fishRecordService.setFishRecord(fishRecord)
+
+            console.log("handleConfirmSubmit: ", result);
+
+            setLoading(false);
+            if (result.success) {
+                setShowConfirmModal(false);
+                Alert.alert('Sucesso', 'Registro enviado com sucesso!', [
+                    { text: 'OK', onPress: () => router.back() },
+                ]);
+                return
+            }
+            Alert.alert('Erro ao Salvar', result.message);
+            return
+
         } catch (error) {
+            console.log("ConfirmSubmit error", error);
+
             Alert.alert('Erro', 'Falha ao enviar registro');
         }
     };
+
+    const saveMediaLocally = async (fileName: string, currentPath: string) => {
+        try {
+            const newPath = `${FileSystem.documentDirectory}${fileName}`;
+
+            // Salvar imagem local
+            await FileSystem.copyAsync({
+                from: currentPath,
+                to: newPath,
+            });
+
+            setFishRecord({ ...fishRecord, fish_image: newPath })
+        } catch (error) {
+            console.log("SaveMediaLocally Error", error);
+
+        }
+    }
 
     return (
         <ScrollView style={styles.container}>

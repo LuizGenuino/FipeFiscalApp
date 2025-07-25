@@ -1,4 +1,4 @@
-import { FishRecord, OfflineStorageData } from '@/src/assets/types';
+import { FishRecord } from '@/src/assets/types';
 import * as SQLite from 'expo-sqlite';
 
 class OfflineStorage {
@@ -65,14 +65,14 @@ class OfflineStorage {
     }
 
     // Recupera todas as equipes
-    async getAllFishRecord(data: FishRecord) {
+    async getAllFishRecord() {
         const db = this.getDb();
-        return await db.getAllAsync('SELECT * FROM teams');
+        return await db.getAllAsync('SELECT * FROM fish_catch');
     }
 
-    async getTeamByCode(code: string) {
+    async getFishRecordByQuery(query: string, parameter: string) {
         const db = this.getDb();
-        return await db.getFirstAsync('SELECT * FROM teams WHERE code = ?', [code]);
+        return await db.getAllAsync(`SELECT * FROM teams WHERE ${query} = ?`, [parameter]);
     }
 }
 

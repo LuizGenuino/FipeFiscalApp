@@ -34,7 +34,7 @@ export default function Index() {
             setLoading(true);
             const userAuth: any = await getUser()
             if (JSON.parse(userAuth)?.inspectorName) {
-                router.push('/SearchTeam');
+                await router.push({ pathname: '/SearchTeam' });
             } else {
                 setLoading(false);
             }

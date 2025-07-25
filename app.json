@@ -35,7 +35,11 @@
     },
     "plugins": [
       "expo-router",
-      "expo-camera",
+      ["expo-camera", {
+    "cameraPermission": "Permitir que o aplicativo acesse a câmera",
+    "microphonePermission": "Permitir que o aplicativo tenha acesso ao microfone",
+    "recordAudioAndroid": true
+  }],
       "expo-video",
       "expo-sqlite"
     ],

@@ -1,14 +1,16 @@
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { usePathname, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { clearUser, getUser } from '../services/storage';
+import { getUser } from '../services/storage';
 import { Ionicons } from '@expo/vector-icons';
 import { useConnection } from '../contexts/connectionContext';
+import { AuthService } from '../services/controller';
 
 export default function AppBar() {
     const router = useRouter();
     const { connected } = useConnection();
     const [inspectorName, setInspectorName] = useState("")
+    const [showModal, setShowModal] = useState(false)
     const pathname = usePathname();
 
     const isSearchTeamPage = pathname === "/SearchTeam"
@@ -29,6 +31,8 @@ export default function AppBar() {
             const userAuth: any = await getUser();
             const name = JSON.parse(userAuth)?.inspectorName
             if (!userAuth || !name) {
+                console.log("aqui");
+
                 await logOut()
             }
             setInspectorName(name)
@@ -38,13 +42,10 @@ export default function AppBar() {
     };
 
     const logOut = async () => {
-        try {
-            await clearUser()
-            router.push('/');
-        } catch (error) {
-            console.log("logOut error: ", error);
+        await new AuthService().Logout()
+        console.log("ok");
 
-        }
+        router.push('/');
     }
 
     return (
@@ -57,7 +58,7 @@ export default function AppBar() {
                     </Text>
                 </TouchableOpacity>
                 <Text style={styles.textName}> | {inspectorName}</Text>
-                <TouchableOpacity onPress={logOut}>
+                <TouchableOpacity onPress={() => router.push('/RecordFishList')}>
                     <Ionicons name="menu" size={36} color="#fff" />
                 </TouchableOpacity>
             </View>

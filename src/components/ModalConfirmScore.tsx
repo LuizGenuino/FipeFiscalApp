@@ -1,5 +1,5 @@
-import { Modal, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import { FishRecord, TeamsOfflineStorage } from "../assets/types";
+import { Modal, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { FishRecord } from "../assets/types";
 import QRCode from "react-native-qrcode-svg";
 
 
@@ -35,7 +35,7 @@ export function ModalConfirmScore({ showConfirmModal, setShowConfirmModal, fishR
                     <View style={styles.modalSection}>
                         <Text style={styles.modalSectionTitle}>Pescado</Text>
                         <View style={styles.row} >
-                            <Text style={styles.modalText}>Código:</Text>
+                            <Text style={styles.modalText}>Código do Time:</Text>
                             <Text style={[styles.modalText, { fontWeight: "bold" }]}>{fishRecord.team}</Text>
                         </View>
                         <View style={styles.row} >

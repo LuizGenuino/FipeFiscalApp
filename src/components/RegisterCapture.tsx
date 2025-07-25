@@ -36,6 +36,9 @@ export function RegisterCapture({ fishRecord, setFishRecord }: ScoreFormProps) {
 
     const handleMediaCaptured = (type: string, data: any) => {
         setShowCamera(false);
+        
+        console.log("captura: ",type, data);
+        
 
         if (!data || !data.uri) {
             Alert.alert("Erro", "Não foi possível capturar a mídia. Tente novamente.");
@@ -44,12 +47,12 @@ export function RegisterCapture({ fishRecord, setFishRecord }: ScoreFormProps) {
 
         if (type === "photo") {
             if (photoType === "fish") {
-                setFishRecord((prev) => ({ ...prev, fishPhoto: data.uri ?? "" }));
+                setFishRecord((prev) => ({ ...prev, fish_image: data.uri ?? "" }));
             } else {
-                setFishRecord((prev) => ({ ...prev, ticketPhoto: data.uri ?? "" }));
+                setFishRecord((prev) => ({ ...prev, card_image: data.uri ?? "" }));
             }
         } else if (type === "video") {
-            setFishRecord((prev) => ({ ...prev, releaseVideo: data.uri ?? "" }));
+            setFishRecord((prev) => ({ ...prev, fish_video: data.uri ?? "" }));
         }
     };
 

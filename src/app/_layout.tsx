@@ -8,6 +8,9 @@ import { ConnectionProvider } from "../contexts/connectionContext";
 export default function RootLayout() {
 
     const pathname = usePathname();
+
+    console.log("pathname: ",pathname);
+    
     
     const isLoginScreen = pathname === '/' || pathname === '/index' || pathname === '/Index' ;
 
@@ -23,10 +26,8 @@ export default function RootLayout() {
                 >
                     <Stack.Screen name="Index" options={{ headerShown: false }} />
                     <Stack.Screen name="SearchTeam" options={{ headerShown: false }} />
-                    <Stack.Screen
-                        name="RegisterScore"
-                        options={{ headerShown: false }}
-                    />
+                    <Stack.Screen name="RegisterScore" options={{ headerShown: false }}/>
+                    <Stack.Screen name="RecordFishList" options={{ headerShown: false }}/>
                 </Stack>
             </LoadingProvider>
         </ConnectionProvider>

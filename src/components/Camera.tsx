@@ -18,6 +18,7 @@ import {
     View,
 } from "react-native";
 import { CameraPermissionModal } from "./CameraPermissionModal";
+import * as FileSystem from 'expo-file-system';
 
 interface CameraComponentProps {
     type: "photo" | "video" | "qrcode";
@@ -48,33 +49,44 @@ export function Camera({ type, onMediaCaptured, active, onClose }: CameraCompone
         };
     }, []);
 
-    const takePicture = async () => {
-        if (cameraRef.current) {
-            const photo = await cameraRef.current.takePictureAsync();
-            onMediaCaptured("photo", photo);
+    const handleCapture = async () => {
+        try {
+            if (cameraRef.current) {
+                const photo = await cameraRef.current.takePictureAsync();
+                onMediaCaptured("photo", photo);
+            }
+        } catch (error) {
+            console.log("handleCapture error, ", error);
         }
     };
 
     const recordVideo = async () => {
-        if (!cameraRef.current) return;
+        try {
+            if (!cameraRef.current) return;
 
-        if (!isRecording) {
-            setIsRecording(true);
-            setRecordingTime(0);
+            if (!isRecording) {
+                setIsRecording(true);
+                setRecordingTime(0);
 
-            intervalRef.current = setInterval(() => {
-                setRecordingTime((prev) => prev + 1);
-            }, 1000);
+                intervalRef.current = setInterval(() => {
+                    setRecordingTime((prev) => prev + 1);
+                }, 1000);
 
-            const video = await cameraRef.current.recordAsync(recordingOptions);
-            onMediaCaptured("video", video);
-            setIsRecording(false);
-        } else {
-            cameraRef.current.stopRecording();
+                const video = await cameraRef.current.recordAsync();
+                onMediaCaptured("video", video);
+                setIsRecording(false);
+            } else {
+                console.log("aqui entrou");
+
+                cameraRef.current.stopRecording();
+            }
+
+            clearInterval(intervalRef.current);
+            intervalRef.current = null;
+        } catch (error) {
+            console.log("recordVideo error, ", error);
+
         }
-
-        clearInterval(intervalRef.current);
-        intervalRef.current = null;
     };
 
     const handleQRCodeScanned = useCallback(({ type, data }: { type: string; data: string }) => {
@@ -99,6 +111,7 @@ export function Camera({ type, onMediaCaptured, active, onClose }: CameraCompone
                     mode={type === "video" ? "video" : "picture"}
                     barcodeScannerSettings={type === "qrcode" ? { barcodeTypes: ["qr"] } : undefined}
                     onBarcodeScanned={type === "qrcode" ? handleQRCodeScanned : undefined}
+                    mute
                 />
             </View>
 
@@ -130,7 +143,7 @@ export function Camera({ type, onMediaCaptured, active, onClose }: CameraCompone
                         <View style={styles.cameraControls}>
                             <TouchableOpacity
                                 style={[styles.captureButton, isRecording && styles.recordingButton]}
-                                onPress={type === "photo" ? takePicture : recordVideo}
+                                onPress={type === "photo" ? handleCapture : recordVideo}
                             >
                                 <Ionicons
                                     name={
