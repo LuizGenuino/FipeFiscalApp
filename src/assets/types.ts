@@ -23,7 +23,7 @@ export type FishData = {
 }
 
 export type FishRecord = {
-    code: string | null | undefined;
+    code: string;
     team: string;
     registered_by: string;
     species: string;

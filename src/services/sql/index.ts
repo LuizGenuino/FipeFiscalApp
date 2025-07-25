@@ -1,4 +1,4 @@
-import { OfflineStorageData } from '@/src/assets/types';
+import { FishRecord, OfflineStorageData } from '@/src/assets/types';
 import * as SQLite from 'expo-sqlite';
 
 class OfflineStorage {
@@ -15,27 +15,18 @@ class OfflineStorage {
 
         // Criação das tabelas
         await this.db.execAsync(`
-      CREATE TABLE IF NOT EXISTS teams (
-        id TEXT PRIMARY KEY NOT NULL,
-        code TEXT NOT NULL,
-        team_name TEXT NOT NULL,
-        id_member_1 INTEGER NOT NULL,
-        name_member_1 TEXT NOT NULL,
-        id_member_2 INTEGER,
-        name_member_2 TEXT,
-        id_member_3 INTEGER,
-        name_member_3 TEXT,
-        id_member_4 INTEGER,
-        name_member_4 TEXT
-      );
-    `);
-
-        await this.db.execAsync(`
-      CREATE TABLE IF NOT EXISTS fish (
-        id TEXT PRIMARY KEY NOT NULL,
+      CREATE TABLE IF NOT EXISTS fish_catch (
+        code TEXT PRIMARY KEY NOT NULL,
+        team TEXT NOT NULL,
+        registered_by TEXT NOT NULL,
         species TEXT NOT NULL,
-        photo TEXT NOT NULL,
-        point INTEGER NOT NULL
+        size INTEGER NOT NULL,
+        point INTEGER NOT NULL,
+        ticket_number TEXT NOT NULL,
+        card_image TEXT NOT NULL,
+        fish_image TEXT NOT NULL,
+        fish_video TEXT NOT NULL,
+        synchronized BOOLEAN NOT NULL DEFAULT false
       );
     `);
     }
@@ -46,66 +37,35 @@ class OfflineStorage {
         return this.db;
     }
 
-    // Armazena equipes offline
-    async setTeams(data: OfflineStorageData) {
-        if (data.column !== 'teams') return;
-
+    // Armazena pontuação offline
+    async setFishRecord(data: FishRecord) {
         const db = this.getDb();
-        await db.runAsync('DELETE FROM teams');
 
+        await db.runAsync(
+            `INSERT INTO fish_catch (
+                code, team, registered_by, species,
+                size, point, ticket_number, card_image,
+                fish_image, fish_video, synchronized
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            [
+                data.code,
+                data.team,
+                data.registered_by,
+                data.species,
+                data.size,
+                data.point,
+                data.ticket_number,
+                data.card_image,
+                data.fish_image,
+                data.fish_video,
+                data.synchronized || false
+            ]
+        );
 
-        for (const item of data.value) {
-            await db.runAsync(
-                `INSERT INTO teams (
-            id, code, team_name,
-            id_member_1, name_member_1,
-            id_member_2, name_member_2,
-            id_member_3, name_member_3,
-            id_member_4, name_member_4
-          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-                [
-                    item.id,
-                    item.code,
-                    item.team_name,
-                    item.id_member_1,
-                    item.name_member_1,
-                    item.id_member_2 ?? null,
-                    item.name_member_2 ?? null,
-                    item.id_member_3 ?? null,
-                    item.name_member_3 ?? null,
-                    item.id_member_4 ?? null,
-                    item.name_member_4 ?? null,
-                ]
-            );
-        }
-
-    }
-
-    // Armazena peixes offline
-    async setFish(data: OfflineStorageData) {
-        if (data.column !== 'fish') return;
-
-        const db = this.getDb();
-        await db.runAsync('DELETE FROM fish');
-
-
-        for (const item of data.value) {
-            await db.runAsync(
-                `INSERT INTO fish (
-            id, species, photo, point
-          ) VALUES (?, ?, ?, ?)`,
-                [
-                    item.id,
-                    item.species,
-                    item.photo,
-                    item.point,
-                ]
-            );
-        }
     }
 
     // Recupera todas as equipes
-    async getAllTeams() {
+    async getAllFishRecord(data: FishRecord) {
         const db = this.getDb();
         return await db.getAllAsync('SELECT * FROM teams');
     }
@@ -113,25 +73,6 @@ class OfflineStorage {
     async getTeamByCode(code: string) {
         const db = this.getDb();
         return await db.getFirstAsync('SELECT * FROM teams WHERE code = ?', [code]);
-    }
-
-    // Recupera todos os peixes
-    async getAllFish() {
-        const db = this.getDb();
-        return await db.getAllAsync('SELECT * FROM fish');
-    }
-
-    // Limpa os dados de uma tabela
-    async clear(column: string) {
-        const db = this.getDb();
-
-        if (column === 'teams') {
-            await db.runAsync('DELETE FROM teams');
-        } else if (column === 'fish') {
-            await db.runAsync('DELETE FROM fish');
-        } else {
-            console.warn(`Coluna desconhecida: ${column}`);
-        }
     }
 }
 
