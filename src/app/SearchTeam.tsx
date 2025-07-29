@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import {
     View,
     Text,
@@ -6,55 +6,85 @@ import {
     TouchableOpacity,
     StyleSheet,
     Alert,
-    ActivityIndicator,
     KeyboardAvoidingView,
     Platform,
     ScrollView,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { Camera } from '@/src/components/Camera';
+
 import { useLoading } from "@/src/contexts/LoadingContext";
 import { useRouter } from 'expo-router';
-import { useFocusEffect } from '@react-navigation/native';
+import { useCameraContext } from '../contexts/CameraContext';
 
 
 export default function SearchTeam() {
+    const { openCamera, closeCamera } = useCameraContext();
     const router = useRouter();
-    const [teamCode, setTeamCode] = useState('PU001');
-    const [showScanner, setShowScanner] = useState(false);
+    const [teamCode, setTeamCode] = useState('');
     const [layoutLoaded, setLayoutLoaded] = useState(false);
     const { setLoading } = useLoading();
 
     const handleSearch = async () => {
         const code = teamCode.trim().toUpperCase();
+        console.log('Código do time:', code);
+
         if (!code) {
             Alert.alert('Erro', 'Por favor, digite o código do time');
             return;
         }
 
-        if (code.length < 5) {
+        if (code.length < 6) {
+            Alert.alert('Codigo Invalido', 'Por favor, digite o código do time valido!');
+            return;
+        }
+
+        if (!code.includes('-')) {
             Alert.alert('Codigo Invalido', 'Por favor, digite o código do time valido!');
             return;
         }
 
         router.push({ pathname: '/RegisterScore', params: { team_code: code } });
+        setTeamCode("")
+    };
+
+
+    const handleCodeChange = (text: string) => {
+        // Remove tudo que não é letra ou número
+        let cleaned = text.toUpperCase().replace(/[^A-Z0-9]/g, '');
+
+        // Limita a 5 caracteres (2 letras + 3 números)
+        if (cleaned.length > 5) cleaned = cleaned.slice(0, 5);
+
+        // Aplica a máscara AA-000
+        let masked = cleaned;
+        if (cleaned.length > 2) {
+            masked = `${cleaned.slice(0, 2)}-${cleaned.slice(2)}`;
+        }
+
+        setTeamCode(masked);
     };
 
     const handleBarCodeScanned = async (type: string, data: string) => {
-        setShowScanner(false);
+        closeCamera()
         const code = data.toUpperCase();
         if (!code) {
             Alert.alert('Erro', 'Por favor, digite o código do time');
             return;
         }
 
-        if (code.length < 5) {
+        if (code.length < 6) {
+            Alert.alert('Codigo Invalido', 'Por favor, digite o código do time valido!');
+            return;
+        }
+
+        if (!code.includes('-')) {
             Alert.alert('Codigo Invalido', 'Por favor, digite o código do time valido!');
             return;
         }
         setTeamCode(code);
 
         router.push({ pathname: '/RegisterScore', params: { team_code: code } });
+        setTeamCode("")
     };
 
     return (
@@ -85,14 +115,23 @@ export default function SearchTeam() {
                             <Ionicons name="person-circle-outline" size={22} color="#64748b" style={styles.inputIcon} />
                             <TextInput
                                 style={styles.input}
-                                placeholder="Código do Time (ex: PU001)"
+                                placeholder="Código do Time (ex: PU-001)"
                                 value={teamCode}
-                                onChangeText={(text) => setTeamCode(text.toUpperCase())}
+                                onChangeText={handleCodeChange}
                                 autoCapitalize="characters"
                                 autoCorrect={false}
                                 keyboardType="default"
                                 returnKeyType="search"
-                                onSubmitEditing={handleSearch}
+                                onSubmitEditing={() => {
+                                    // Validação final (opcional)
+                                    const isValid = /^[A-Z]{2}-\d{3}$/.test(teamCode);
+                                    if (!isValid) {
+                                        alert('Código inválido. Use o formato AA-000');
+                                    } else {
+                                        // Executa a ação de busca
+                                        console.log('Código válido:', teamCode);
+                                    }
+                                }}
                             />
                         </View>
 
@@ -113,17 +152,18 @@ export default function SearchTeam() {
                             <View style={styles.dividerLine} />
                         </View>
 
-                        <TouchableOpacity style={styles.qrButton} onPress={() => setShowScanner(true)} accessibilityLabel="Ler QR Code">
+                        <TouchableOpacity style={styles.qrButton} onPress={() =>
+                            openCamera({
+                                type: "qrcode", // ou "video", "qrcode"
+                                onMediaCaptured: handleBarCodeScanned,
+                            })
+                        } accessibilityLabel="Ler QR Code">
                             <Ionicons name="qr-code-outline" size={22} color="#2563eb" style={styles.buttonIcon} />
                             <Text style={styles.qrButtonText}>Ler QR Code</Text>
                         </TouchableOpacity>
                     </View>
                 </ScrollView>
             </KeyboardAvoidingView>
-
-            {showScanner && (
-                <Camera type="qrcode" onMediaCaptured={handleBarCodeScanned} onClose={() => setShowScanner(false)} active={showScanner} />
-            )}
         </View>
     );
 }

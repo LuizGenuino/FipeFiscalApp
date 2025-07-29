@@ -43,10 +43,9 @@ export default function RecordFishList() {
 
     }
 
-
     return (
         <View style={styles.container}>
-            {fishRecord && <ModalViewScore fishRecord={fishRecord} setShowModal={setShowModal} showModal={showModal} qrRef={"qrcodde"} handleConfirmSubmit={() => { }} />}
+            {fishRecord && <ModalViewScore fishRecord={fishRecord} setShowModal={setShowModal} showModal={showModal} handleConfirmSubmit={() => { }} />}
             <View style={styles.header}>
                 <Ionicons name="browsers" size={60} color="#2563eb" />
                 <Text style={styles.title}>Lista de Pontuação</Text>

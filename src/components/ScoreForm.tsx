@@ -8,14 +8,12 @@ import {
     Image,
 } from "react-native";
 import { Select } from "./Select";
-import { FishData, FishRecord, RootStackParamList } from "../assets/types";
+import { FishData, FishRecord } from "../assets/types";
 import { useCallback, useEffect, useState } from "react";
-import { getUser } from "../services/storage";
 
-import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { useRouter } from "expo-router";
+import { AuthService } from "../services/controller";
 
-type NavigationProp = NativeStackNavigationProp<RootStackParamList, "SearchTeam">;
 
 interface ScoreFormProps {
     fishRecord: FishRecord;
@@ -23,13 +21,13 @@ interface ScoreFormProps {
 }
 
 const fishSpecies: FishData[] = [
-    { species: "Barbado", point: 30, photo: require("@/assets/images/Barbado.png") },
-    { species: "Piraputanga", point: 50, photo: require("@/assets/images/Piraputanga.png") },
-    { species: "Jurupoca", point: 50, photo: require("@/assets/images/Jurupoca.png") },
-    { species: "Pintado", point: 70, photo: require("@/assets/images/Pintado.png") },
-    { species: "Cachara", point: 70, photo: require("@/assets/images/Cachara.png") },
-    { species: "Jaú", point: 70, photo: require("@/assets/images/Jaú.png"), minimumSize: 40 },
-    { species: "Pacu", point: 100, photo: require("@/assets/images/Pacu.png") },
+    { species: "BARBADO", point: 30, photo: require("@/assets/images/Barbado.png") },
+    { species: "PIRAPUTANGA", point: 50, photo: require("@/assets/images/Piraputanga.png") },
+    { species: "JURUPOCA", point: 50, photo: require("@/assets/images/Jurupoca.png") },
+    { species: "PINTADO", point: 70, photo: require("@/assets/images/Pintado.png") },
+    { species: "CACHARA", point: 70, photo: require("@/assets/images/Cachara.png") },
+    { species: "JAÚ", point: 70, photo: require("@/assets/images/Jaú.png"), minimumSize: 40 },
+    { species: "PACU", point: 100, photo: require("@/assets/images/Pacu.png") },
 ];
 
 export function ScoreForm({ fishRecord, setFishRecord }: ScoreFormProps) {
@@ -38,8 +36,6 @@ export function ScoreForm({ fishRecord, setFishRecord }: ScoreFormProps) {
     const [minimumSizeError, setMinimumSizeError] = useState("");
 
     useEffect(() => {
-        if (!fishRecord.registered_by) getInspectorName();
-
         if (fishRecord.species === "Jaú" && +fishRecord.size < 40) {
             setMinimumSizeError("O tamanho mínimo do Jaú é 40cm!");
         } else if (minimumSizeError) {
@@ -51,21 +47,6 @@ export function ScoreForm({ fishRecord, setFishRecord }: ScoreFormProps) {
             setFishRecord(prev => ({ ...prev, point: newPoints }));
         }
     }, [fishRecord]);
-
-    const getInspectorName = async () => {
-        try {
-            const data: any = await getUser();
-            const parsed = JSON.parse(data);
-            if (!parsed?.inspectorName) {
-                Alert.alert("Nome invalido", parsed?.inspectorName)
-                router.push('/');
-                return;
-            }
-            setFishRecord(prev => ({ ...prev, inspectorName: parsed.inspectorName }));
-        } catch (error) {
-            Alert.alert("Erro", "Não foi possível obter os dados do inspetor.");
-        }
-    };
 
     const calculateFishingScore = (): number => {
         const points = fishSpecies.find(f => f.species === fishRecord.species)?.point || 0;
@@ -112,7 +93,7 @@ export function ScoreForm({ fishRecord, setFishRecord }: ScoreFormProps) {
                             style={[styles.input, errors.size && styles.errorBorder]}
                             placeholder="Ex: 35"
                             placeholderTextColor="#9ca3af"
-                            value={fishRecord.size.toString()}
+                            value={fishRecord.size !== 0 ? fishRecord.size.toString() : ""}
                             onChangeText={(value) => handleChange("size", value)}
                             keyboardType="numeric"
                         />

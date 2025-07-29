@@ -18,7 +18,6 @@ import {
     View,
 } from "react-native";
 import { CameraPermissionModal } from "./CameraPermissionModal";
-import * as FileSystem from 'expo-file-system';
 
 interface CameraComponentProps {
     type: "photo" | "video" | "qrcode";
@@ -72,7 +71,7 @@ export function Camera({ type, onMediaCaptured, active, onClose }: CameraCompone
                     setRecordingTime((prev) => prev + 1);
                 }, 1000);
 
-                const video = await cameraRef.current.recordAsync();
+                const video = await cameraRef.current.recordAsync(recordingOptions);
                 onMediaCaptured("video", video);
                 setIsRecording(false);
             } else {

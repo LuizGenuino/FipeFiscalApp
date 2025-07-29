@@ -1,9 +1,3 @@
-export type RootStackParamList = {
-    Login: undefined;
-    SearchTeam: undefined;
-    RegisterScore: { team_code: string };
-};
-
 
 export type FishData = {
     species: string;
@@ -24,6 +18,7 @@ export type FishRecord = {
     fish_image: string;
     fish_video: string;
     synchronized?: boolean;
+    created_at?: string;
 }
 
 export type ApiResponse = {

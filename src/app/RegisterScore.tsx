@@ -6,6 +6,7 @@ import {
     StyleSheet,
     Alert,
     ScrollView,
+    SafeAreaView,
 } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -17,7 +18,7 @@ import { generateUniqueCode } from '../assets/randomCode';
 import * as Print from 'expo-print';
 import * as FileSystem from 'expo-file-system';
 import { PrintFormat } from '../assets/printFormart';
-import { FishRecordService } from '../services/controller';
+import { AuthService, FishRecordService } from '../services/controller';
 import { useLoading } from '../contexts/LoadingContext';
 
 type QRCodeRef = {
@@ -60,7 +61,21 @@ export default function RegisterScore() {
             setFishRecord({ ...fishRecord, team: teamCode })
         }
 
-    }, [teamCode, router]);
+        if (!fishRecord.registered_by) {
+            getInspectorName();
+        }
+
+
+    }, [teamCode]);
+
+    const getInspectorName = async () => {
+        const response = await new AuthService().getUser();
+        if (!response.success && !response.data.inspectorName) {
+            router.push('/');
+            return;
+        }
+        setFishRecord(prev => ({ ...prev, registered_by: response.data.inspectorName }));
+    };
 
     const validateForm = () => {
         if (!fishRecord.species) {
@@ -73,6 +88,22 @@ export default function RegisterScore() {
         }
         if (!fishRecord.ticket_number) {
             Alert.alert('Erro', 'Digite o número da ficha');
+            return false;
+        }
+        if (!fishRecord.registered_by) {
+            Alert.alert('Erro', 'Digite o nome do responsável pelo registro');
+            return false;
+        }
+        if (!fishRecord.fish_image) {
+            Alert.alert('Erro', 'Capture a imagem do peixe na regua');
+            return false;
+        }
+        if (!fishRecord.fish_video) {
+            Alert.alert('Erro', 'Capture o vídeo da soltura do peixe');
+            return false;
+        }
+        if (!fishRecord.card_image) {
+            Alert.alert('Erro', 'Capture a imagem da ficha');
             return false;
         }
         return true;
@@ -93,7 +124,6 @@ export default function RegisterScore() {
 
         qrRef.current.toDataURL(async (dataURL) => {
             const html = PrintFormat({ fishRecord, dataURL });
-
             try {
                 await Print.printAsync({ html });
                 setShowConfirmModal(false);
@@ -109,36 +139,35 @@ export default function RegisterScore() {
     const onConfirmAndPrint = async () => {
         setLoading(true);
         await handleConfirmSubmit();
-        // await handlePrint();
+        await handlePrint();
     };
 
     const handleConfirmSubmit = async () => {
-        try {
-            await saveMediaLocally(`fish_image_${fishRecord.code}.jpg`, fishRecord.fish_image)
-            await saveMediaLocally(`card_image_${fishRecord.code}.jpg`, fishRecord.card_image)
-            await saveMediaLocally(`fish_video_${fishRecord.code}.jpg`, fishRecord.fish_video)
+        await saveMediaLocally(`fish_image_${fishRecord.code}.jpg`, fishRecord.fish_image)
+        await saveMediaLocally(`card_image_${fishRecord.code}.jpg`, fishRecord.card_image)
+        await saveMediaLocally(`fish_video_${fishRecord.code}.jpg`, fishRecord.fish_video)
 
-            const fishRecordService = new FishRecordService()
-            const result = await fishRecordService.setFishRecord(fishRecord)
+        setFishRecord(prev => ({
+            ...prev,
+            synchronized: false,
+            created_at: new Date().toISOString(),
+        }));
 
-            console.log("handleConfirmSubmit: ", result);
+        const fishRecordService = new FishRecordService()
+        const result = await fishRecordService.setFishRecord(fishRecord)
 
-            setLoading(false);
-            if (result.success) {
-                setShowConfirmModal(false);
-                Alert.alert('Sucesso', 'Registro enviado com sucesso!', [
-                    { text: 'OK', onPress: () => router.back() },
-                ]);
-                return
-            }
-            Alert.alert('Erro ao Salvar', result.message);
+        console.log("handleConfirmSubmit: ", result);
+
+        setLoading(false);
+        if (result.success) {
+            setShowConfirmModal(false);
+            Alert.alert('Sucesso', 'Registro enviado com sucesso!', [
+                { text: 'OK', onPress: () => router.back() },
+            ]);
             return
-
-        } catch (error) {
-            console.log("ConfirmSubmit error", error);
-
-            Alert.alert('Erro', 'Falha ao enviar registro');
         }
+        Alert.alert('Erro ao Salvar', result.message);
+        return
     };
 
     const saveMediaLocally = async (fileName: string, currentPath: string) => {
@@ -159,46 +188,49 @@ export default function RegisterScore() {
     }
 
     return (
-        <ScrollView style={styles.container}>
-            <View style={styles.content}>
-                <View style={styles.card}>
-                    <View style={styles.cardHeader}>
-                        <Ionicons name="person-add" size={24} color="#2563eb" />
-                        <Text style={styles.cardTitle}>Informações do Time</Text>
+        <SafeAreaView style={styles.container}>
+            <ScrollView
+                contentContainerStyle={styles.scrollContent}
+
+            >
+                <View style={styles.content}>
+                    <View style={styles.card}>
+                        <View style={styles.cardHeader}>
+                            <Ionicons name="person-add" size={24} color="#2563eb" />
+                            <Text style={styles.cardTitle}>Informações do Time</Text>
+                        </View>
+                        <View style={styles.cardContent}>
+                            <Text style={styles.infoText}>
+                                <Text style={styles.infoLabel}>Código do Time: </Text>
+                                {teamCode}
+                            </Text>
+                        </View>
                     </View>
-                    <View style={styles.cardContent}>
-                        <Text style={styles.infoText}>
-                            <Text style={styles.infoLabel}>Código do Time: </Text>
-                            {teamCode}
-                        </Text>
-                    </View>
+
+                    <ScoreForm fishRecord={fishRecord} setFishRecord={setFishRecord} />
+                    <RegisterCapture fishRecord={fishRecord} setFishRecord={setFishRecord} />
+
+                    <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
+                        <Ionicons name="send" size={20} color="#fff" style={styles.buttonIcon} />
+                        <Text style={styles.submitButtonText}>Enviar Registro</Text>
+                    </TouchableOpacity>
                 </View>
 
-                <ScoreForm fishRecord={fishRecord} setFishRecord={setFishRecord} />
-                <RegisterCapture fishRecord={fishRecord} setFishRecord={setFishRecord} />
-
-                <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
-                    <Ionicons name="send" size={20} color="#fff" style={styles.buttonIcon} />
-                    <Text style={styles.submitButtonText}>Enviar Registro</Text>
-                </TouchableOpacity>
-            </View>
-
-            <ModalConfirmScore
-                showConfirmModal={showConfirmModal}
-                setShowConfirmModal={setShowConfirmModal}
-                fishRecord={fishRecord}
-                handleConfirmSubmit={onConfirmAndPrint}
-                qrRef={qrRef}
-            />
-        </ScrollView>
+                <ModalConfirmScore
+                    showConfirmModal={showConfirmModal}
+                    setShowConfirmModal={setShowConfirmModal}
+                    fishRecord={fishRecord}
+                    handleConfirmSubmit={onConfirmAndPrint}
+                    qrRef={qrRef}
+                />
+            </ScrollView>
+        </SafeAreaView>
     );
 }
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: '#f0f9ff',
-    },
+    container: { flex: 1, backgroundColor: '#f0f9ff' },
+    scrollContent: { flexGrow: 1, padding: 24 },
     content: {
         padding: 16,
     },

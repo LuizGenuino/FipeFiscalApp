@@ -14,12 +14,11 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { AuthService } from '../services/controller';
-import { getUser } from '../services/storage';
 import { useLoading } from "@/src/contexts/LoadingContext";
 
 export default function Index() {
     const router = useRouter();
-    const [inspectorName, setInspectorName] = useState('João Fernando Silva Souza Filho');
+    const [inspectorName, setInspectorName] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const authService = new AuthService()
     const { setLoading } = useLoading();
@@ -30,20 +29,14 @@ export default function Index() {
 
 
     const verifyAuth = async () => {
-        try {
-            setLoading(true);
-            const userAuth: any = await getUser()
-            if (JSON.parse(userAuth)?.inspectorName) {
-                await router.push({ pathname: '/SearchTeam' });
-            } else {
-                setLoading(false);
-            }
-
-        } catch (error) {
+        setLoading(true);
+        const resonse: any = await authService.getUser();
+        if (resonse.success && resonse.data.inspectorName) {
+            await router.push({ pathname: '/SearchTeam' });
+        } else {
             setLoading(false);
-            console.error('Erro ao verificar autenticação:', error);
-            // Se não houver usuário autenticado, nada acontece e o usuário permanece na tela de login
         }
+
     }
 
 

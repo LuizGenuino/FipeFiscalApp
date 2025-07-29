@@ -9,9 +9,9 @@ import {
     Modal,
 } from "react-native";
 import { useState, useCallback } from "react";
-import { Camera } from "./Camera";
 import { FishRecord } from "../assets/types";
 import VideoPreview from "./VideoPreview";
+import { useCameraContext } from "../contexts/CameraContext";
 
 interface ScoreFormProps {
     fishRecord: FishRecord;
@@ -19,26 +19,28 @@ interface ScoreFormProps {
 }
 
 export function RegisterCapture({ fishRecord, setFishRecord }: ScoreFormProps) {
-    const [showCamera, setShowCamera] = useState(false);
-    const [cameraType, setCameraType] = useState<"photo" | "video">("photo");
+    const { openCamera, closeCamera } = useCameraContext();
     const [photoType, setPhotoType] = useState<"fish" | "ticket">("fish");
 
     const openCameraForPhoto = useCallback((type: "fish" | "ticket") => {
         setPhotoType(type);
-        setCameraType("photo");
-        setShowCamera(true);
+        openCamera({
+            type: "photo", // ou "video", "qrcode"
+            onMediaCaptured: handleMediaCaptured,
+        })
     }, []);
 
     const openCameraForVideo = useCallback(() => {
-        setCameraType("video");
-        setShowCamera(true);
+        openCamera({
+            type: "video", // ou "video", "qrcode"
+            onMediaCaptured: handleMediaCaptured,
+        })
     }, []);
 
     const handleMediaCaptured = (type: string, data: any) => {
-        setShowCamera(false);
-        
-        console.log("captura: ",type, data);
-        
+        closeCamera()
+        console.log("captura: ", type, data);
+
 
         if (!data || !data.uri) {
             Alert.alert("Erro", "Não foi possível capturar a mídia. Tente novamente.");
@@ -131,20 +133,6 @@ export function RegisterCapture({ fishRecord, setFishRecord }: ScoreFormProps) {
                 fishRecord.card_image,
                 () => openCameraForPhoto("ticket"),
                 () => removeMedia("fish_video")
-            )}
-
-            {showCamera && (
-                <Modal
-                    animationType="slide"
-                    visible={showCamera}
-                >
-                    <Camera
-                        onClose={() => setShowCamera(false)}
-                        active={showCamera}
-                        type={cameraType}
-                        onMediaCaptured={handleMediaCaptured}
-                    />
-                </Modal>
             )}
         </View>
     );

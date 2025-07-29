@@ -1,12 +1,12 @@
 import { FishRecord } from "./types";
 
 interface PrintFormatProps {
-  fishRecord: FishRecord;
-  dataURL: string
+    fishRecord: FishRecord;
+    dataURL: string
 }
 
 export function PrintFormat({ fishRecord, dataURL }: PrintFormatProps) {
-  return `
+    return `
     <html>
       <head>
         <meta charset="utf-8" />

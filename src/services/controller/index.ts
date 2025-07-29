@@ -6,7 +6,7 @@ import {
     LoginData,
 } from "@/src/assets/types";
 import { ApiService } from "../api";
-import { clearUser, storeUser } from "../storage";
+import { clearUser, getUser, storeUser } from "../storage";
 import OfflineStorage from "../sql";
 import NetInfo from '@react-native-community/netinfo';
 
@@ -53,6 +53,32 @@ export class AuthService {
             return {
                 success: false,
                 message: error?.message || 'Erro ao tentar Sair',
+                data: null,
+            };
+        }
+    }
+
+    async getUser(): Promise<ControllerResponse> {
+        try {
+            const data: any = await getUser()
+            if (!data) {
+                return {
+                    success: false,
+                    message: "Usuário não encontrado",
+                    data: null,
+                };
+            }
+            const parsedData = JSON.parse(data);
+            return {
+                success: true,
+                message: "Usuário obtido com sucesso",
+                data: parsedData,
+            };
+        } catch (error: any) {
+            console.error('Erro ao obter usuário:', error);
+            return {
+                success: false,
+                message: error?.message || 'Erro ao obter usuário',
                 data: null,
             };
         }

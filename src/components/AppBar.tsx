@@ -1,16 +1,15 @@
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { usePathname, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { getUser } from '../services/storage';
 import { Ionicons } from '@expo/vector-icons';
 import { useConnection } from '../contexts/connectionContext';
 import { AuthService } from '../services/controller';
 
 export default function AppBar() {
     const router = useRouter();
+    const authService = new AuthService();
     const { connected } = useConnection();
     const [inspectorName, setInspectorName] = useState("")
-    const [showModal, setShowModal] = useState(false)
     const pathname = usePathname();
 
     const isSearchTeamPage = pathname === "/SearchTeam"
@@ -27,24 +26,17 @@ export default function AppBar() {
 
 
     const checkAuth = async () => {
-        try {
-            const userAuth: any = await getUser();
-            const name = JSON.parse(userAuth)?.inspectorName
-            if (!userAuth || !name) {
-                console.log("aqui");
+        const response = await authService.getUser();
 
-                await logOut()
-            }
-            setInspectorName(name)
-        } catch (error) {
-            console.log("checkAuth error: ", error);
+        if (!response.success || !response.data.inspectorName) {
+            await logOut()
         }
+        setInspectorName(response.data.inspectorName)
+
     };
 
     const logOut = async () => {
-        await new AuthService().Logout()
-        console.log("ok");
-
+        await authService.Logout()
         router.push('/');
     }
 
