@@ -8,7 +8,7 @@ import {
     Image,
     Modal,
 } from "react-native";
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef } from "react";
 import { FishRecord } from "../assets/types";
 import VideoPreview from "./VideoPreview";
 import { useCameraContext } from "../contexts/CameraContext";
@@ -20,10 +20,15 @@ interface ScoreFormProps {
 
 export function RegisterCapture({ fishRecord, setFishRecord }: ScoreFormProps) {
     const { openCamera, closeCamera } = useCameraContext();
-    const [photoType, setPhotoType] = useState<"fish" | "ticket">("fish");
+    const photoTypeRef = useRef<"fish" | "ticket" | null>(null);
 
     const openCameraForPhoto = useCallback((type: "fish" | "ticket") => {
-        setPhotoType(type);
+        console.log("Opening camera for photo type:", type);
+        
+       photoTypeRef.current = type;
+
+        console.log("Photo type set to:", photoTypeRef.current);
+        
         openCamera({
             type: "photo", // ou "video", "qrcode"
             onMediaCaptured: handleMediaCaptured,
@@ -46,11 +51,15 @@ export function RegisterCapture({ fishRecord, setFishRecord }: ScoreFormProps) {
             Alert.alert("Erro", "Não foi possível capturar a mídia. Tente novamente.");
             return;
         }
+        const photoType = photoTypeRef.current;
+        console.log("Captura de mídia:", type, photoType);
 
         if (type === "photo") {
             if (photoType === "fish") {
                 setFishRecord((prev) => ({ ...prev, fish_image: data.uri ?? "" }));
             } else {
+                console.log("Foto da ficha capturada:", data.uri);
+
                 setFishRecord((prev) => ({ ...prev, card_image: data.uri ?? "" }));
             }
         } else if (type === "video") {
