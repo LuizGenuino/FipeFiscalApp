@@ -13,10 +13,12 @@ export type FishRecord = {
     species: string;
     size: number;
     point: number;
-    ticket_number: string;
+    card_number: string;
     card_image: string;
     fish_image: string;
     fish_video: string;
+    latitude?: number;
+    longitude?: number;
     synchronized?: boolean;
     created_at?: string;
 }

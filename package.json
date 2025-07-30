@@ -39,7 +39,8 @@
     "react-native-svg": "^15.11.2",
     "react-native-web": "~0.20.0",
     "react-qr-code": "^2.0.18",
-    "expo-media-library": "~17.1.7"
+    "expo-media-library": "~17.1.7",
+    "expo-location": "~18.1.6"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",

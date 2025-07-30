@@ -30,7 +30,7 @@ export function PrintFormat({ fishRecord, dataURL }: PrintFormatProps) {
               </div>
         <div class="section">
           <div class="row"><span class="bold">Equipe:</span><span>${fishRecord.team}</span></div>
-          <div class="row"><span class="bold">Nº Ficha:</span><span>${fishRecord.ticket_number}</span></div>
+          <div class="row"><span class="bold">Nº Ficha:</span><span>${fishRecord.card_number}</span></div>
           <div class="row"><span class="bold">Espécie:</span><span>${fishRecord.species}</span></div>
           <div class="row"><span class="bold">Tamanho:</span><span>${fishRecord.size} Cm</span></div>
           <div class="row"><span class="bold">Pontuação:</span><span>${fishRecord.point} pts</span></div>

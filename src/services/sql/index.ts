@@ -2,19 +2,19 @@ import { FishRecord } from '@/src/assets/types';
 import * as SQLite from 'expo-sqlite';
 
 class OfflineStorage {
-    private db: SQLite.SQLiteDatabase | null = null;
+  private db: SQLite.SQLiteDatabase | null = null;
 
-    constructor() {
-        this.init();
-    }
+  constructor() {
+    this.init();
+  }
 
-    // Inicializa e configura o banco
-    async init() {
-        this.db = await SQLite.openDatabaseAsync('FipeFiscalApp');
-        await this.db.execAsync(`PRAGMA journal_mode = WAL;`);
+  // Inicializa e configura o banco
+  async init() {
+    this.db = await SQLite.openDatabaseAsync('FipeFiscalApp');
+    await this.db.execAsync(`PRAGMA journal_mode = WAL;`);
 
-        // Criação das tabelas
-        await this.db.execAsync(`
+    // Criação das tabelas
+    await this.db.execAsync(`
       CREATE TABLE IF NOT EXISTS fish_catch (
         code TEXT PRIMARY KEY NOT NULL,
         team TEXT NOT NULL,
@@ -22,58 +22,71 @@ class OfflineStorage {
         species TEXT NOT NULL,
         size INTEGER NOT NULL,
         point INTEGER NOT NULL,
-        ticket_number TEXT NOT NULL,
+        card_number TEXT NOT NULL,
         card_image TEXT NOT NULL,
         fish_image TEXT NOT NULL,
         fish_video TEXT NOT NULL,
-        synchronized BOOLEAN NOT NULL DEFAULT false
+        latitude REAL NOT NULL,
+        longitude REAL NOT NULL,
+        synchronized BOOLEAN NOT NULL DEFAULT false,
+        created_at TEXT NOT NULL DEFAULT (datetime('now', 'localtime'))
       );
     `);
-    }
+  }
 
-    // Garante que o banco foi inicializado
-    private getDb() {
-        if (!this.db) throw new Error('Banco de dados ainda não foi inicializado');
-        return this.db;
-    }
+  // Garante que o banco foi inicializado
+  private getDb() {
+    if (!this.db) throw new Error('Banco de dados ainda não foi inicializado');
+    return this.db;
+  }
 
-    // Armazena pontuação offline
-    async setFishRecord(data: FishRecord) {
-        const db = this.getDb();
+  // Armazena pontuação offline
+  async setFishRecord(data: FishRecord) {
+    const db = this.getDb();
 
-        await db.runAsync(
-            `INSERT INTO fish_catch (
+    await db.runAsync(
+      `INSERT INTO fish_catch (
                 code, team, registered_by, species,
-                size, point, ticket_number, card_image,
-                fish_image, fish_video, synchronized
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-            [
-                data.code,
-                data.team,
-                data.registered_by,
-                data.species,
-                data.size,
-                data.point,
-                data.ticket_number,
-                data.card_image,
-                data.fish_image,
-                data.fish_video,
-                data.synchronized || false
-            ]
-        );
+                size, point, card_number, card_image,
+                fish_image, fish_video,latitude, longitude,  synchronized, created_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        data.code,
+        data.team,
+        data.registered_by,
+        data.species,
+        data.size,
+        data.point,
+        data.card_number,
+        data.card_image,
+        data.fish_image,
+        data.fish_video,
+        data.latitude || 0,
+        data.longitude || 0,
+        data.synchronized || false,
+        data.created_at || new Date().toISOString()
+      ]
+    );
 
-    }
+  }
 
-    // Recupera todas as equipes
-    async getAllFishRecord() {
-        const db = this.getDb();
-        return await db.getAllAsync('SELECT * FROM fish_catch');
-    }
+  // Recupera todas as equipes
+  async getAllFishRecord() {
+    const db = this.getDb();
+    return await db.getAllAsync('SELECT * FROM fish_catch');
+  }
 
-    async getFishRecordByQuery(query: string, parameter: string) {
-        const db = this.getDb();
-        return await db.getAllAsync(`SELECT * FROM teams WHERE ${query} = ?`, [parameter]);
-    }
+  async getFishRecordByQuery(query: string, parameter: string) {
+    const db = this.getDb();
+    return await db.getAllAsync(`SELECT * FROM teams WHERE ${query} = ?`, [parameter]);
+  }
+
+  // apaga banco de dados
+  async clearDatabase() {
+    const db = this.getDb();
+    await db.execAsync('DROP TABLE IF EXISTS fish_catch');
+    await this.init(); // Recria as tabelas após limpar
+  }
 }
 
 export default OfflineStorage;

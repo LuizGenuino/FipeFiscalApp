@@ -11,9 +11,6 @@ export default function RootLayout() {
 
     const pathname = usePathname();
 
-    console.log("pathname: ", pathname);
-
-
     const isLoginScreen = pathname === '/' || pathname === '/index' || pathname === '/Index';
 
     return (

@@ -78,7 +78,7 @@ export default function Index() {
                         <Ionicons name="person" size={20} color="#666" style={styles.inputIcon} />
                         <TextInput
                             style={styles.input}
-                            placeholder="Nome Cmpleto"
+                            placeholder="Nome Completo"
                             value={inspectorName}
                             onChangeText={setInspectorName}
                             autoCapitalize="sentences"

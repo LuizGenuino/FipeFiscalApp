@@ -26,7 +26,6 @@ export default function SearchTeam() {
 
     const handleSearch = async () => {
         const code = teamCode.trim().toUpperCase();
-        console.log('Código do time:', code);
 
         if (!code) {
             Alert.alert('Erro', 'Por favor, digite o código do time');

@@ -92,8 +92,7 @@ export class FishRecordService {
                 console.log("aqui vai a api");
 
             }
-            const response = await offlineStorage.setFishRecord(data)
-            console.log("response Fish Record", response);
+            await offlineStorage.setFishRecord(data)
 
             return {
                 success: true,

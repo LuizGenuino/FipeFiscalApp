@@ -23,11 +23,8 @@ export function RegisterCapture({ fishRecord, setFishRecord }: ScoreFormProps) {
     const photoTypeRef = useRef<"fish" | "ticket" | null>(null);
 
     const openCameraForPhoto = useCallback((type: "fish" | "ticket") => {
-        console.log("Opening camera for photo type:", type);
-        
-       photoTypeRef.current = type;
 
-        console.log("Photo type set to:", photoTypeRef.current);
+       photoTypeRef.current = type;
         
         openCamera({
             type: "photo", // ou "video", "qrcode"
@@ -44,15 +41,12 @@ export function RegisterCapture({ fishRecord, setFishRecord }: ScoreFormProps) {
 
     const handleMediaCaptured = (type: string, data: any) => {
         closeCamera()
-        console.log("captura: ", type, data);
-
 
         if (!data || !data.uri) {
             Alert.alert("Erro", "Não foi possível capturar a mídia. Tente novamente.");
             return;
         }
         const photoType = photoTypeRef.current;
-        console.log("Captura de mídia:", type, photoType);
 
         if (type === "photo") {
             if (photoType === "fish") {

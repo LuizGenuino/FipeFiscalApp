@@ -31,7 +31,6 @@ export default function RecordFishList() {
     const getFishRecordList = async () => {
         setLoading(true)
         const result = await fishRecordService.getAllFishRecord()
-        console.log("getFishRecordList", result.data);
         if (!result.success) {
             Alert.alert("Erro", result.message, [
                 { text: 'OK', onPress: () => router.back() },
@@ -45,7 +44,7 @@ export default function RecordFishList() {
 
     return (
         <View style={styles.container}>
-            {fishRecord && <ModalViewScore fishRecord={fishRecord} setShowModal={setShowModal} showModal={showModal} handleConfirmSubmit={() => { }} />}
+            {fishRecord && <ModalViewScore fishRecord={fishRecord} setShowModal={setShowModal} showModal={showModal} handleConfirmSubmit={() => { }} qrRef={""} />}
             <View style={styles.header}>
                 <Ionicons name="browsers" size={60} color="#2563eb" />
                 <Text style={styles.title}>Lista de Pontuação</Text>
@@ -78,7 +77,7 @@ export default function RecordFishList() {
                                         </View>
                                         <View style={styles.row} >
                                             <Text style={styles.cardText}>Nº Ficha:</Text>
-                                            <Text style={[styles.cardText, { fontWeight: "bold" }]}>{item.ticket_number}</Text>
+                                            <Text style={[styles.cardText, { fontWeight: "bold" }]}>{item.card_number}</Text>
                                         </View>
                                         <View style={styles.row} >
                                             <Text style={styles.cardText}>Espécie: </Text>

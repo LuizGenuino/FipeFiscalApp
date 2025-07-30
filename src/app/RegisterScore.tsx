@@ -1,18 +1,17 @@
 import React, { useEffect, useRef, useState } from 'react';
 import {
-    View,
-    Text,
-    TouchableOpacity,
-    StyleSheet,
-    Alert,
-    ScrollView,
-    SafeAreaView,
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  Alert,
+  ScrollView,
+  SafeAreaView,
 } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { ScoreForm } from '@/src/components/ScoreForm';
 import { RegisterCapture } from '@/src/components/RegisterCapture';
-import { ModalConfirmScore } from '@/src/components/ModalConfirmScore';
 import { FishRecord } from '../assets/types';
 import { generateUniqueCode } from '../assets/randomCode';
 import * as Print from 'expo-print';
@@ -20,275 +19,294 @@ import * as FileSystem from 'expo-file-system';
 import { PrintFormat } from '../assets/printFormart';
 import { AuthService, FishRecordService } from '../services/controller';
 import { useLoading } from '../contexts/LoadingContext';
+import { ModalViewScore } from '../components/ModalViewScore';
+import * as Location from 'expo-location';
 
 type QRCodeRef = {
-    toDataURL: (callback: (dataURL: string) => void) => void;
+  toDataURL: (callback: (dataURL: string) => void) => void;
 };
 
 export default function RegisterScore() {
-    const { setLoading } = useLoading();
-    const qrRef = useRef<QRCodeRef | null>(null);
+  const { setLoading } = useLoading();
+  const qrRef = useRef<QRCodeRef | null>(null);
+  const [location, setLocation] = useState<Location.LocationObject | null>(null);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const router = useRouter();
+  const { team_code: teamCode } = useLocalSearchParams();
+  const [fishRecord, setFishRecord] = useState<FishRecord>({
+    code: "",
+    team: '',
+    registered_by: "",
+    species: "",
+    size: 0,
+    point: 0,
+    card_number: '',
+    card_image: '',
+    fish_image: '',
+    fish_video: '',
+    latitude: 0,
+    longitude: 0,
+    synchronized: false
+  });
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
 
-    const router = useRouter();
-    const { team_code: teamCode } = useLocalSearchParams();
-    const [fishRecord, setFishRecord] = useState<FishRecord>({
-        code: "",
-        team: '',
-        registered_by: "",
-        species: "",
-        size: 0,
-        point: 0,
-        ticket_number: '',
-        card_image: '',
-        fish_image: '',
-        fish_video: '',
-        synchronized: false
+  useEffect(() => {
+    async function getCurrentLocation() {
+
+      let { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') {
+        setErrorMsg('A permissão de localização foi negada');
+        return;
+      }
+    }
+
+    getCurrentLocation();
+  }, []);
+
+  useEffect(() => {
+    if (!teamCode) {
+      Alert.alert('Erro', 'Parâmetro do time não encontrado');
+      router.back();
+    }
+
+    if (teamCode.length < 5) {
+      Alert.alert('Erro', 'Parâmetro do time não encontrado');
+      router.back();
+    }
+
+    if (typeof teamCode === 'string') {
+      setFishRecord({ ...fishRecord, team: teamCode })
+    }
+
+    if (!fishRecord.registered_by) {
+      getInspectorName();
+    }
+
+
+  }, [teamCode]);
+
+  const getInspectorName = async () => {
+    const response = await new AuthService().getUser();
+    if (!response.success && !response.data.inspectorName) {
+      router.push('/');
+      return;
+    }
+    setFishRecord(prev => ({ ...prev, registered_by: response.data.inspectorName }));
+  };
+
+  const validateForm = () => {
+    if (!fishRecord.species) {
+      Alert.alert('Erro', 'Selecione a espécie do peixe');
+      return false;
+    }
+    if (!fishRecord.size) {
+      Alert.alert('Erro', 'Digite o tamanho do peixe');
+      return false;
+    }
+    if (!fishRecord.card_number) {
+      Alert.alert('Erro', 'Digite o número da ficha');
+      return false;
+    }
+    if (!fishRecord.registered_by) {
+      Alert.alert('Erro', 'Digite o nome do responsável pelo registro');
+      return false;
+    }
+    if (!fishRecord.fish_image) {
+      Alert.alert('Erro', 'Capture a imagem do peixe na regua');
+      return false;
+    }
+    if (!fishRecord.fish_video) {
+      Alert.alert('Erro', 'Capture o vídeo da soltura do peixe');
+      return false;
+    }
+    if (!fishRecord.card_image) {
+      Alert.alert('Erro', 'Capture a imagem da ficha');
+      return false;
+    }
+    return true;
+  };
+
+  const handleSubmit = async () => {
+    if (!validateForm()) return;
+    let location = await Location.getCurrentPositionAsync({});
+    setFishRecord(prev => ({
+      ...prev,
+      code: generateUniqueCode(),
+      created_at: new Date().toISOString(),
+      latitude: location.coords.latitude,
+      longitude: location.coords.longitude,
+    }));
+    setShowConfirmModal(true);
+
+  }
+
+
+  const handlePrint = async () => {
+
+    if (!qrRef.current) return;
+
+
+    qrRef.current.toDataURL(async (dataURL) => {
+      const html = PrintFormat({ fishRecord, dataURL });
+      try {
+        await Print.printAsync({ html });
+        setShowConfirmModal(false);
+        Alert.alert('Sucesso', 'Registro enviado com sucesso!', [
+          { text: 'OK', onPress: () => router.back() },
+        ]);
+      } catch (err) {
+        console.error("Erro ao imprimir:", err);
+      }
     });
-    const [showConfirmModal, setShowConfirmModal] = useState(false);
+  };
 
-    useEffect(() => {
-        if (!teamCode) {
-            Alert.alert('Erro', 'Parâmetro do time não encontrado');
-            router.back();
-        }
+  const onConfirmAndPrint = async () => {
+    setLoading(true);
+    await handleConfirmSubmit();
+    await handlePrint();
+  };
 
-        if (teamCode.length < 5) {
-            Alert.alert('Erro', 'Parâmetro do time não encontrado');
-            router.back();
-        }
+  const handleConfirmSubmit = async () => {
+    await saveMediaLocally(`fish_image_${fishRecord.code}.jpg`, fishRecord.fish_image)
+    await saveMediaLocally(`card_image_${fishRecord.code}.jpg`, fishRecord.card_image)
+    await saveMediaLocally(`fish_video_${fishRecord.code}.jpg`, fishRecord.fish_video)
 
-        if (typeof teamCode === 'string') {
-            setFishRecord({ ...fishRecord, team: teamCode })
-        }
+    const fishRecordService = new FishRecordService()
+    const result = await fishRecordService.setFishRecord(fishRecord)
 
-        if (!fishRecord.registered_by) {
-            getInspectorName();
-        }
+    setLoading(false);
+    if (result.success) {
+      setShowConfirmModal(false);
+      Alert.alert('Sucesso', 'Registro enviado com sucesso!', [
+        { text: 'OK', onPress: () => router.back() },
+      ]);
+      return
+    }
+    Alert.alert('Erro ao Salvar', result.message);
+    return
+  };
 
+  const saveMediaLocally = async (fileName: string, currentPath: string) => {
+    try {
+      const newPath = `${FileSystem.documentDirectory}${fileName}`;
 
-    }, [teamCode]);
+      // Salvar imagem local
+      await FileSystem.copyAsync({
+        from: currentPath,
+        to: newPath,
+      });
 
-    const getInspectorName = async () => {
-        const response = await new AuthService().getUser();
-        if (!response.success && !response.data.inspectorName) {
-            router.push('/');
-            return;
-        }
-        setFishRecord(prev => ({ ...prev, registered_by: response.data.inspectorName }));
-    };
-
-    const validateForm = () => {
-        if (!fishRecord.species) {
-            Alert.alert('Erro', 'Selecione a espécie do peixe');
-            return false;
-        }
-        if (!fishRecord.size) {
-            Alert.alert('Erro', 'Digite o tamanho do peixe');
-            return false;
-        }
-        if (!fishRecord.ticket_number) {
-            Alert.alert('Erro', 'Digite o número da ficha');
-            return false;
-        }
-        if (!fishRecord.registered_by) {
-            Alert.alert('Erro', 'Digite o nome do responsável pelo registro');
-            return false;
-        }
-        if (!fishRecord.fish_image) {
-            Alert.alert('Erro', 'Capture a imagem do peixe na regua');
-            return false;
-        }
-        if (!fishRecord.fish_video) {
-            Alert.alert('Erro', 'Capture o vídeo da soltura do peixe');
-            return false;
-        }
-        if (!fishRecord.card_image) {
-            Alert.alert('Erro', 'Capture a imagem da ficha');
-            return false;
-        }
-        return true;
-    };
-
-    const handleSubmit = () => {
-        if (!validateForm()) return;
-        setFishRecord({ ...fishRecord, code: generateUniqueCode() })
-        setShowConfirmModal(true);
+      setFishRecord({ ...fishRecord, fish_image: newPath })
+    } catch (error) {
+      console.log("SaveMediaLocally Error", error);
 
     }
+  }
 
+  return (
+    <SafeAreaView style={styles.container}>
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
 
-    const handlePrint = async () => {
+      >
+        <View style={styles.content}>
+          <View style={styles.card}>
+            <View style={styles.cardHeader}>
+              <Ionicons name="person-add" size={24} color="#2563eb" />
+              <Text style={styles.cardTitle}>Informações do Time</Text>
+            </View>
+            <View style={styles.cardContent}>
+              <Text style={styles.infoText}>
+                <Text style={styles.infoLabel}>Código do Time: </Text>
+                {teamCode}
+              </Text>
+            </View>
+          </View>
 
-        if (!qrRef.current) return;
+          <ScoreForm fishRecord={fishRecord} setFishRecord={setFishRecord} />
+          <RegisterCapture fishRecord={fishRecord} setFishRecord={setFishRecord} />
 
+          <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
+            <Ionicons name="send" size={20} color="#fff" style={styles.buttonIcon} />
+            <Text style={styles.submitButtonText}>Enviar Registro</Text>
+          </TouchableOpacity>
+        </View>
 
-        qrRef.current.toDataURL(async (dataURL) => {
-            const html = PrintFormat({ fishRecord, dataURL });
-            try {
-                await Print.printAsync({ html });
-                setShowConfirmModal(false);
-                Alert.alert('Sucesso', 'Registro enviado com sucesso!', [
-                    { text: 'OK', onPress: () => router.back() },
-                ]);
-            } catch (err) {
-                console.error("Erro ao imprimir:", err);
-            }
-        });
-    };
-
-    const onConfirmAndPrint = async () => {
-        setLoading(true);
-        await handleConfirmSubmit();
-        await handlePrint();
-    };
-
-    const handleConfirmSubmit = async () => {
-        await saveMediaLocally(`fish_image_${fishRecord.code}.jpg`, fishRecord.fish_image)
-        await saveMediaLocally(`card_image_${fishRecord.code}.jpg`, fishRecord.card_image)
-        await saveMediaLocally(`fish_video_${fishRecord.code}.jpg`, fishRecord.fish_video)
-
-        setFishRecord(prev => ({
-            ...prev,
-            synchronized: false,
-            created_at: new Date().toISOString(),
-        }));
-
-        const fishRecordService = new FishRecordService()
-        const result = await fishRecordService.setFishRecord(fishRecord)
-
-        console.log("handleConfirmSubmit: ", result);
-
-        setLoading(false);
-        if (result.success) {
-            setShowConfirmModal(false);
-            Alert.alert('Sucesso', 'Registro enviado com sucesso!', [
-                { text: 'OK', onPress: () => router.back() },
-            ]);
-            return
-        }
-        Alert.alert('Erro ao Salvar', result.message);
-        return
-    };
-
-    const saveMediaLocally = async (fileName: string, currentPath: string) => {
-        try {
-            const newPath = `${FileSystem.documentDirectory}${fileName}`;
-
-            // Salvar imagem local
-            await FileSystem.copyAsync({
-                from: currentPath,
-                to: newPath,
-            });
-
-            setFishRecord({ ...fishRecord, fish_image: newPath })
-        } catch (error) {
-            console.log("SaveMediaLocally Error", error);
-
-        }
-    }
-
-    return (
-        <SafeAreaView style={styles.container}>
-            <ScrollView
-                contentContainerStyle={styles.scrollContent}
-
-            >
-                <View style={styles.content}>
-                    <View style={styles.card}>
-                        <View style={styles.cardHeader}>
-                            <Ionicons name="person-add" size={24} color="#2563eb" />
-                            <Text style={styles.cardTitle}>Informações do Time</Text>
-                        </View>
-                        <View style={styles.cardContent}>
-                            <Text style={styles.infoText}>
-                                <Text style={styles.infoLabel}>Código do Time: </Text>
-                                {teamCode}
-                            </Text>
-                        </View>
-                    </View>
-
-                    <ScoreForm fishRecord={fishRecord} setFishRecord={setFishRecord} />
-                    <RegisterCapture fishRecord={fishRecord} setFishRecord={setFishRecord} />
-
-                    <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
-                        <Ionicons name="send" size={20} color="#fff" style={styles.buttonIcon} />
-                        <Text style={styles.submitButtonText}>Enviar Registro</Text>
-                    </TouchableOpacity>
-                </View>
-
-                <ModalConfirmScore
-                    showConfirmModal={showConfirmModal}
-                    setShowConfirmModal={setShowConfirmModal}
-                    fishRecord={fishRecord}
-                    handleConfirmSubmit={onConfirmAndPrint}
-                    qrRef={qrRef}
-                />
-            </ScrollView>
-        </SafeAreaView>
-    );
+        <ModalViewScore
+          showModal={showConfirmModal}
+          setShowModal={setShowConfirmModal}
+          fishRecord={fishRecord}
+          handleConfirmSubmit={onConfirmAndPrint}
+          qrRef={qrRef}
+          textButtonClose="Corrigir"
+          textButtonConfirm="Registrar e Imprimir"
+        />
+      </ScrollView>
+    </SafeAreaView>
+  );
 }
 
 const styles = StyleSheet.create({
-    container: { flex: 1, backgroundColor: '#f0f9ff' },
-    scrollContent: { flexGrow: 1, padding: 24 },
-    content: {
-        padding: 16,
-    },
-    card: {
-        backgroundColor: '#fff',
-        borderRadius: 12,
-        marginBottom: 16,
-        elevation: 2,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 4,
-    },
-    cardHeader: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        padding: 16,
-        borderBottomWidth: 1,
-        borderBottomColor: '#e5e7eb',
-    },
-    cardTitle: {
-        fontSize: 18,
-        fontWeight: 'bold',
-        color: '#1f2937',
-        marginLeft: 8,
-    },
-    cardContent: {
-        padding: 16,
-    },
-    infoText: {
-        fontSize: 16,
-        color: '#374151',
-        marginBottom: 8,
-    },
-    infoLabel: {
-        fontWeight: 'bold',
-    },
-    submitButton: {
-        backgroundColor: '#2563eb',
-        borderRadius: 12,
-        padding: 16,
-        flexDirection: 'row',
-        justifyContent: 'center',
-        alignItems: 'center',
-        marginTop: 20,
-        marginBottom: 40,
-        elevation: 3,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.2,
-        shadowRadius: 4,
-    },
-    buttonIcon: {
-        marginRight: 8,
-    },
-    submitButtonText: {
-        color: '#fff',
-        fontSize: 18,
-        fontWeight: 'bold',
-    },
+  container: { flex: 1, backgroundColor: '#f0f9ff' },
+  scrollContent: { flexGrow: 1, padding: 24 },
+  content: {
+    padding: 16,
+  },
+  card: {
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    marginBottom: 16,
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+  },
+  cardHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#e5e7eb',
+  },
+  cardTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#1f2937',
+    marginLeft: 8,
+  },
+  cardContent: {
+    padding: 16,
+  },
+  infoText: {
+    fontSize: 16,
+    color: '#374151',
+    marginBottom: 8,
+  },
+  infoLabel: {
+    fontWeight: 'bold',
+  },
+  submitButton: {
+    backgroundColor: '#2563eb',
+    borderRadius: 12,
+    padding: 16,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 20,
+    marginBottom: 40,
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+  },
+  buttonIcon: {
+    marginRight: 8,
+  },
+  submitButtonText: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
 });

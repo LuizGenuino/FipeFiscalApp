@@ -107,8 +107,8 @@ export function ScoreForm({ fishRecord, setFishRecord }: ScoreFormProps) {
                             style={[styles.input, errors.ticketNumber && styles.errorBorder]}
                             placeholder="Ex: 001"
                             placeholderTextColor="#9ca3af"
-                            value={fishRecord.ticket_number}
-                            onChangeText={(value) => handleChange("ticket_number", value)}
+                            value={fishRecord.card_number}
+                            onChangeText={(value) => handleChange("card_number", value)}
                             keyboardType="numeric"
                         />
                         {errors.ticketNumber && <Text style={styles.errorText}>Número da ficha é obrigatório.</Text>}
