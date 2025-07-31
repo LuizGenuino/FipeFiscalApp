@@ -76,7 +76,7 @@ export function ModalViewScore({
                   <QRCode
                     value={`https://google.com/${fishRecord.code}`}
                     size={200}
-                    getRef={(c) => (qrRef && qrRef.current ? (qrRef.current = c) : null)}
+                    getRef={(c) => (qrRef.current = c)}
                   />
                 </View>
 

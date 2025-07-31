@@ -17,7 +17,6 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import * as MediaLibrary from 'expo-media-library';
 import { CameraPermissionModal } from "./CameraPermissionModal";
 
 interface CameraComponentProps {
@@ -33,9 +32,8 @@ const recordingOptions: CameraRecordingOptions = {
 
 export function Camera({ type, onMediaCaptured, active, onClose }: CameraComponentProps) {
   const [permission, requestPermission] = useCameraPermissions();
-  const [mediaPermission, requestMediaPermission] = MediaLibrary.usePermissions();
+
   const cameraRef = useRef<any>(null);
-  const [hasMediaLibraryPermission, setHasMediaLibraryPermission] = useState<boolean | null>(null);
   const [isRecording, setIsRecording] = useState(false);
   const [recordingTime, setRecordingTime] = useState(0);
   const intervalRef = useRef<any>(null);
@@ -50,14 +48,6 @@ export function Camera({ type, onMediaCaptured, active, onClose }: CameraCompone
     };
   }, []);
 
-  useEffect(() => {
-    (async () => {
-      if (mediaPermission?.status !== 'granted') {
-        const reponse = await requestMediaPermission();
-        setHasMediaLibraryPermission(reponse.granted);
-      }
-    })();
-  }, []);
 
 
   const handleCapture = async () => {
@@ -65,7 +55,6 @@ export function Camera({ type, onMediaCaptured, active, onClose }: CameraCompone
       if (cameraRef.current) {
         const photo = await cameraRef.current.takePictureAsync();
         onMediaCaptured("photo", photo);
-        savePicture(photo.uri)
       }
     } catch (error) {
       console.log("handleCapture error, ", error);
@@ -86,7 +75,6 @@ export function Camera({ type, onMediaCaptured, active, onClose }: CameraCompone
 
         const video = await cameraRef.current.recordAsync(recordingOptions);
         onMediaCaptured("video", video);
-        savePicture(video.uri)
         setIsRecording(false);
       } else {
         cameraRef.current.stopRecording();
@@ -110,23 +98,6 @@ export function Camera({ type, onMediaCaptured, active, onClose }: CameraCompone
     return <CameraPermissionModal onPermissionGranted={requestPermission} />;
   }
 
-  const savePicture = async (mediaUri: any) => {
-    if (mediaUri && hasMediaLibraryPermission) {
-      try {
-        await MediaLibrary.saveToLibraryAsync(mediaUri);
-      } catch (error) {
-        console.error('Failed to save picture:', error);
-        alert('Failed to save picture.');
-      }
-    } else if (!hasMediaLibraryPermission) {
-      alert('Permission to access media library is required to save pictures.');
-    }
-  };
-
-  if (hasMediaLibraryPermission === false) {
-    return <Text>No access to media library</Text>;
-  }
-
   return (
     <View style={styles.cameraContainer}>
       {/* Câmera com zIndex menor */}
@@ -142,7 +113,6 @@ export function Camera({ type, onMediaCaptured, active, onClose }: CameraCompone
           barcodeScannerSettings={type === "qrcode" ? { barcodeTypes: ["qr"] } : undefined}
           onBarcodeScanned={type === "qrcode" ? handleQRCodeScanned : undefined}
           mute
-
         />
       </View>
 

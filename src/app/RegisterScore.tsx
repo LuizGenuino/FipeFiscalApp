@@ -14,13 +14,14 @@ import { ScoreForm } from '@/src/components/ScoreForm';
 import { RegisterCapture } from '@/src/components/RegisterCapture';
 import { FishRecord } from '../assets/types';
 import { generateUniqueCode } from '../assets/randomCode';
-import * as Print from 'expo-print';
-import * as FileSystem from 'expo-file-system';
 import { PrintFormat } from '../assets/printFormart';
 import { AuthService, FishRecordService } from '../services/controller';
 import { useLoading } from '../contexts/LoadingContext';
 import { ModalViewScore } from '../components/ModalViewScore';
 import * as Location from 'expo-location';
+import * as MediaLibrary from 'expo-media-library';
+import * as Print from 'expo-print';
+import * as FileSystem from 'expo-file-system';
 
 type QRCodeRef = {
   toDataURL: (callback: (dataURL: string) => void) => void;
@@ -29,9 +30,10 @@ type QRCodeRef = {
 export default function RegisterScore() {
   const { setLoading } = useLoading();
   const qrRef = useRef<QRCodeRef | null>(null);
-  const [location, setLocation] = useState<Location.LocationObject | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [hasMediaLibraryPermission, setHasMediaLibraryPermission] = useState<boolean | null>(null);
   const router = useRouter();
+  const [mediaPermission, requestMediaPermission] = MediaLibrary.usePermissions();
   const { team_code: teamCode } = useLocalSearchParams();
   const [fishRecord, setFishRecord] = useState<FishRecord>({
     code: "",
@@ -51,38 +53,33 @@ export default function RegisterScore() {
   const [showConfirmModal, setShowConfirmModal] = useState(false);
 
   useEffect(() => {
-    async function getCurrentLocation() {
-
+    (async () => {
       let { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== 'granted') {
         setErrorMsg('A permissão de localização foi negada');
-        return;
       }
-    }
-
-    getCurrentLocation();
+    })();
   }, []);
 
   useEffect(() => {
-    if (!teamCode) {
+    (async () => {
+      if (mediaPermission?.status !== 'granted') {
+        const response = await requestMediaPermission();
+        setHasMediaLibraryPermission(response.granted);
+      }
+    })();
+  }, []);
+
+  useEffect(() => {
+    if (!teamCode || typeof teamCode !== 'string' || teamCode.length < 5) {
       Alert.alert('Erro', 'Parâmetro do time não encontrado');
       router.back();
+      return;
     }
 
-    if (teamCode.length < 5) {
-      Alert.alert('Erro', 'Parâmetro do time não encontrado');
-      router.back();
-    }
+    setFishRecord(prev => ({ ...prev, team: teamCode }));
 
-    if (typeof teamCode === 'string') {
-      setFishRecord({ ...fishRecord, team: teamCode })
-    }
-
-    if (!fishRecord.registered_by) {
-      getInspectorName();
-    }
-
-
+    if (!fishRecord.registered_by) getInspectorName();
   }, [teamCode]);
 
   const getInspectorName = async () => {
@@ -95,40 +92,31 @@ export default function RegisterScore() {
   };
 
   const validateForm = () => {
-    if (!fishRecord.species) {
-      Alert.alert('Erro', 'Selecione a espécie do peixe');
-      return false;
+    const fields = [
+      { field: fishRecord.species, message: 'Selecione a espécie do peixe' },
+      { field: fishRecord.size, message: 'Digite o tamanho do peixe' },
+      { field: fishRecord.card_number, message: 'Digite o número da ficha' },
+      { field: fishRecord.registered_by, message: 'Digite o nome do responsável pelo registro' },
+      { field: fishRecord.fish_image, message: 'Capture a imagem do peixe na régua' },
+      { field: fishRecord.fish_video, message: 'Capture o vídeo da soltura do peixe' },
+      { field: fishRecord.card_image, message: 'Capture a imagem da ficha' },
+    ];
+
+    for (let { field, message } of fields) {
+      if (!field) {
+        Alert.alert('Erro', message);
+        return false;
+      }
     }
-    if (!fishRecord.size) {
-      Alert.alert('Erro', 'Digite o tamanho do peixe');
-      return false;
-    }
-    if (!fishRecord.card_number) {
-      Alert.alert('Erro', 'Digite o número da ficha');
-      return false;
-    }
-    if (!fishRecord.registered_by) {
-      Alert.alert('Erro', 'Digite o nome do responsável pelo registro');
-      return false;
-    }
-    if (!fishRecord.fish_image) {
-      Alert.alert('Erro', 'Capture a imagem do peixe na regua');
-      return false;
-    }
-    if (!fishRecord.fish_video) {
-      Alert.alert('Erro', 'Capture o vídeo da soltura do peixe');
-      return false;
-    }
-    if (!fishRecord.card_image) {
-      Alert.alert('Erro', 'Capture a imagem da ficha');
-      return false;
-    }
+
     return true;
   };
 
   const handleSubmit = async () => {
     if (!validateForm()) return;
+
     let location = await Location.getCurrentPositionAsync({});
+
     setFishRecord(prev => ({
       ...prev,
       code: generateUniqueCode(),
@@ -136,18 +124,18 @@ export default function RegisterScore() {
       latitude: location.coords.latitude,
       longitude: location.coords.longitude,
     }));
+
     setShowConfirmModal(true);
-
-  }
-
+  };
 
   const handlePrint = async () => {
-
+    console.log("handlePrint called with qrRef:", qrRef.current);
+    
     if (!qrRef.current) return;
-
 
     qrRef.current.toDataURL(async (dataURL) => {
       const html = PrintFormat({ fishRecord, dataURL });
+
       try {
         await Print.printAsync({ html });
         setShowConfirmModal(false);
@@ -167,48 +155,39 @@ export default function RegisterScore() {
   };
 
   const handleConfirmSubmit = async () => {
-    await saveMediaLocally(`fish_image_${fishRecord.code}.jpg`, fishRecord.fish_image)
-    await saveMediaLocally(`card_image_${fishRecord.code}.jpg`, fishRecord.card_image)
-    await saveMediaLocally(`fish_video_${fishRecord.code}.jpg`, fishRecord.fish_video)
+    await saveMediaLocally(`${fishRecord.team}_fish_image_${fishRecord.code}.jpg`, fishRecord.fish_image);
+    await saveMediaLocally(`${fishRecord.team}_card_image_${fishRecord.code}.jpg`, fishRecord.card_image);
+    await saveMediaLocally(`${fishRecord.team}_fish_video_${fishRecord.code}.mp4`, fishRecord.fish_video);
 
-    const fishRecordService = new FishRecordService()
-    const result = await fishRecordService.setFishRecord(fishRecord)
-
+    const result = await new FishRecordService().setFishRecord(fishRecord);
     setLoading(false);
+
     if (result.success) {
       setShowConfirmModal(false);
       Alert.alert('Sucesso', 'Registro enviado com sucesso!', [
-        { text: 'OK', onPress: () => router.back() },
+        { text: 'OK', onPress: () => {} },
       ]);
-      return
+    } else {
+      Alert.alert('Erro ao Salvar', result.message);
     }
-    Alert.alert('Erro ao Salvar', result.message);
-    return
   };
 
   const saveMediaLocally = async (fileName: string, currentPath: string) => {
     try {
       const newPath = `${FileSystem.documentDirectory}${fileName}`;
-
-      // Salvar imagem local
-      await FileSystem.copyAsync({
-        from: currentPath,
-        to: newPath,
-      });
-
-      setFishRecord({ ...fishRecord, fish_image: newPath })
+      await FileSystem.copyAsync({ from: currentPath, to: newPath });
+      const asset = await MediaLibrary.createAssetAsync(newPath);
+      await MediaLibrary.createAlbumAsync('Fiscal FIPE 2025', asset, false);
+      setFishRecord(prev => ({ ...prev, fish_image: newPath }));
     } catch (error) {
       console.log("SaveMediaLocally Error", error);
-
+      alert('Falha ao salvar mídia na galeria.');
     }
-  }
+  };
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView
-        contentContainerStyle={styles.scrollContent}
-
-      >
+      <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.content}>
           <View style={styles.card}>
             <View style={styles.cardHeader}>
@@ -247,11 +226,9 @@ export default function RegisterScore() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#f0f9ff' },
-  scrollContent: { flexGrow: 1, padding: 24 },
-  content: {
-    padding: 16,
-  },
+  container: { flex: 1, backgroundColor: '#f0f9ff',  marginBottom: "2%" },
+  scrollContent: { flexGrow: 1, padding: 24,},
+  content: {},
   card: {
     backgroundColor: '#fff',
     borderRadius: 12,
@@ -275,9 +252,7 @@ const styles = StyleSheet.create({
     color: '#1f2937',
     marginLeft: 8,
   },
-  cardContent: {
-    padding: 16,
-  },
+  cardContent: { padding: 16 },
   infoText: {
     fontSize: 16,
     color: '#374151',
@@ -301,9 +276,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.2,
     shadowRadius: 4,
   },
-  buttonIcon: {
-    marginRight: 8,
-  },
+  buttonIcon: { marginRight: 8 },
   submitButtonText: {
     color: '#fff',
     fontSize: 18,
