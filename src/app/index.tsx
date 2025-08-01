@@ -41,9 +41,6 @@ export default function Index() {
 
   const requestAllPermissions = async () => {
     try {
-      console.log('Media Permission:', mediaPermission);
-      console.log('Camera Permission:', cameraPermission);
-      console.log('Location Permission:', locationPermission);
       if (mediaPermission?.status === 'granted' && cameraPermission?.status === 'granted' && locationPermission === true) {
         return;
       }

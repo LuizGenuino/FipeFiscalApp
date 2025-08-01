@@ -12,7 +12,6 @@ import { FishData, FishRecord } from "../assets/types";
 import { useCallback, useEffect, useState } from "react";
 
 import { useRouter } from "expo-router";
-import { AuthService } from "../services/controller";
 
 
 interface ScoreFormProps {
@@ -36,7 +35,7 @@ export function ScoreForm({ fishRecord, setFishRecord }: ScoreFormProps) {
     const [minimumSizeError, setMinimumSizeError] = useState("");
 
     useEffect(() => {
-        if (fishRecord.species === "Jaú" && +fishRecord.size < 40) {
+        if (fishRecord.species === "JAÚ" && +fishRecord.size < 40) {
             setMinimumSizeError("O tamanho mínimo do Jaú é 40cm!");
         } else if (minimumSizeError) {
             setMinimumSizeError("");

@@ -52,8 +52,6 @@ export function RegisterCapture({ fishRecord, setFishRecord }: ScoreFormProps) {
       if (photoType === "fish") {
         setFishRecord((prev) => ({ ...prev, fish_image: data.uri ?? "" }));
       } else {
-        console.log("Foto da ficha capturada:", data.uri);
-
         setFishRecord((prev) => ({ ...prev, card_image: data.uri ?? "" }));
       }
     } else if (type === "video") {

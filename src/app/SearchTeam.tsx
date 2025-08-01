@@ -126,10 +126,7 @@ export default function SearchTeam() {
                                     const isValid = /^[A-Z]{2}-\d{3}$/.test(teamCode);
                                     if (!isValid) {
                                         alert('Código inválido. Use o formato AA-000');
-                                    } else {
-                                        // Executa a ação de busca
-                                        console.log('Código válido:', teamCode);
-                                    }
+                                    } 
                                 }}
                             />
                         </View>

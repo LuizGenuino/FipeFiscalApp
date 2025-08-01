@@ -14,7 +14,7 @@ import { ScoreForm } from '@/src/components/ScoreForm';
 import { RegisterCapture } from '@/src/components/RegisterCapture';
 import { FishRecord } from '../assets/types';
 import { generateUniqueCode } from '../assets/randomCode';
-import { PrintFormat } from '../assets/printFormart';
+import { getBase64Logo, PrintFormat } from '../assets/printFormart';
 import { AuthService, FishRecordService } from '../services/controller';
 import { useLoading } from '../contexts/LoadingContext';
 import { ModalViewScore } from '../components/ModalViewScore';
@@ -129,23 +129,30 @@ export default function RegisterScore() {
   };
 
   const handlePrint = async () => {
-    console.log("handlePrint called with qrRef:", qrRef.current);
-    
+
     if (!qrRef.current) return;
 
-    qrRef.current.toDataURL(async (dataURL) => {
-      const html = PrintFormat({ fishRecord, dataURL });
+    try {
+      await qrRef.current.toDataURL(async (dataURL) => {
+              const logoBase64 = await getBase64Logo();
+        const html = PrintFormat({ fishRecord, dataURL, logoBase64 });
 
-      try {
-        await Print.printAsync({ html });
-        setShowConfirmModal(false);
-        Alert.alert('Sucesso', 'Registro enviado com sucesso!', [
-          { text: 'OK', onPress: () => router.back() },
-        ]);
-      } catch (err) {
-        console.error("Erro ao imprimir:", err);
-      }
-    });
+        try {
+          await Print.printAsync({ html });
+          setShowConfirmModal(false);
+          Alert.alert('Sucesso', 'Registro enviado com sucesso!', [
+            { text: 'OK', onPress: () => router.back() },
+          ]);
+        } catch (err) {
+          console.error("Erro ao imprimir:", err);
+        }
+      });
+    } catch (error) {
+      console.error("Error generating QR code data URL:", error);
+      Alert.alert('Erro', 'Falha ao gerar o QR Code');
+      return;
+
+    }
   };
 
   const onConfirmAndPrint = async () => {
@@ -165,8 +172,8 @@ export default function RegisterScore() {
     if (result.success) {
       setShowConfirmModal(false);
       Alert.alert('Sucesso', 'Registro enviado com sucesso!', [
-        { text: 'OK', onPress: () => {} },
-      ]);
+          { text: 'OK', onPress: () => router.back() },
+        ]);
     } else {
       Alert.alert('Erro ao Salvar', result.message);
     }
@@ -226,8 +233,8 @@ export default function RegisterScore() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#f0f9ff',  marginBottom: "2%" },
-  scrollContent: { flexGrow: 1, padding: 24,},
+  container: { flex: 1, backgroundColor: '#f0f9ff', marginBottom: "2%" },
+  scrollContent: { flexGrow: 1, padding: 24, },
   content: {},
   card: {
     backgroundColor: '#fff',
