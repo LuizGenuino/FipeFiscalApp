@@ -100,8 +100,8 @@ export function ModalViewScore({
 
                 </View>
                 <View style={styles.row}>
-                  <Text style={styles.cardEspecies}>
-                    {fishRecord.species}
+                  <Text style={styles.cardEspecies_id}>
+                    {fishRecord.species_id}
                   </Text>
                 </View>
                 <View style={styles.row}>
@@ -272,7 +272,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 4,
   },
-  cardEspecies: { fontWeight: "bold", fontSize: 22, textAlign: "center", width: "100%", marginVertical: 10 },
+  cardEspecies_id: { fontWeight: "bold", fontSize: 22, textAlign: "center", width: "100%", marginVertical: 10 },
   cardPoint: { display: "flex", flexDirection: "row", justifyContent: "center", borderWidth: 3, borderColor: "#000", padding: 10, marginVertical: 10, borderRadius: 10, borderStyle: "dashed" },
   cardHeader: {
     flexDirection: "row",

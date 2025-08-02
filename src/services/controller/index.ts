@@ -87,10 +87,15 @@ export class AuthService {
 
 export class FishRecordService {
     async setFishRecord(data: FishRecord): Promise<ControllerResponse> {
+        data.size = +data.size
         try {
-            if (!(await isOnline())) {
-                console.log("aqui vai a api");
-
+            if ((await isOnline())) {
+                const apiService = new ApiService('/fish_catch');
+                const response: ApiResponse = await apiService.post(data);
+                console.log("response api: ", response);
+                if (response.success) {
+                    data.synchronized = true
+                }
             }
             await offlineStorage.setFishRecord(data)
 

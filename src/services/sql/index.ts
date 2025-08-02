@@ -14,12 +14,13 @@ class OfflineStorage {
     await this.db.execAsync(`PRAGMA journal_mode = WAL;`);
 
     // Criação das tabelas
+     // await this.db.execAsync('DROP TABLE IF EXISTS fish_catch')
     await this.db.execAsync(`
       CREATE TABLE IF NOT EXISTS fish_catch (
         code TEXT PRIMARY KEY NOT NULL,
         team TEXT NOT NULL,
         registered_by TEXT NOT NULL,
-        species TEXT NOT NULL,
+        species_id TEXT NOT NULL,
         size INTEGER NOT NULL,
         point INTEGER NOT NULL,
         card_number TEXT NOT NULL,
@@ -46,7 +47,7 @@ class OfflineStorage {
 
     await db.runAsync(
       `INSERT INTO fish_catch (
-                code, team, registered_by, species,
+                code, team, registered_by, species_id,
                 size, point, card_number, card_image,
                 fish_image, fish_video,latitude, longitude,  synchronized, created_at
             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
@@ -54,7 +55,7 @@ class OfflineStorage {
         data.code,
         data.team,
         data.registered_by,
-        data.species,
+        data.species_id,
         data.size,
         data.point,
         data.card_number,

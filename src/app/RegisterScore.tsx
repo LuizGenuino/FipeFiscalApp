@@ -39,7 +39,7 @@ export default function RegisterScore() {
     code: "",
     team: '',
     registered_by: "",
-    species: "",
+    species_id: "",
     size: 0,
     point: 0,
     card_number: '',
@@ -51,6 +51,7 @@ export default function RegisterScore() {
     synchronized: false
   });
   const [showConfirmModal, setShowConfirmModal] = useState(false);
+
 
   useEffect(() => {
     (async () => {
@@ -93,7 +94,7 @@ export default function RegisterScore() {
 
   const validateForm = () => {
     const fields = [
-      { field: fishRecord.species, message: 'Selecione a espécie do peixe' },
+      { field: fishRecord.species_id, message: 'Selecione a espécie do peixe' },
       { field: fishRecord.size, message: 'Digite o tamanho do peixe' },
       { field: fishRecord.card_number, message: 'Digite o número da ficha' },
       { field: fishRecord.registered_by, message: 'Digite o nome do responsável pelo registro' },
@@ -157,11 +158,13 @@ export default function RegisterScore() {
 
   const onConfirmAndPrint = async () => {
     setLoading(true);
+    setShowConfirmModal(false)
     await handleConfirmSubmit();
     await handlePrint();
   };
 
   const handleConfirmSubmit = async () => {
+    setLoading(true)
     await saveMediaLocally(`${fishRecord.team}_fish_image_${fishRecord.code}.jpg`, fishRecord.fish_image);
     await saveMediaLocally(`${fishRecord.team}_card_image_${fishRecord.code}.jpg`, fishRecord.card_image);
     await saveMediaLocally(`${fishRecord.team}_fish_video_${fishRecord.code}.mp4`, fishRecord.fish_video);

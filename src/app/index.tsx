@@ -18,6 +18,7 @@ import * as Location from 'expo-location';
 import * as MediaLibrary from 'expo-media-library';
 import { useCameraPermissions } from 'expo-camera';
 
+
 export default function Index() {
   const router = useRouter();
   const [inspectorName, setInspectorName] = useState('');
@@ -44,11 +45,6 @@ export default function Index() {
       if (mediaPermission?.status === 'granted' && cameraPermission?.status === 'granted' && locationPermission === true) {
         return;
       }
-      // exibe um alerta informando que as permissões são necessárias antes de solicitar as permissões
-      Alert.alert(
-        'Permissões Necessárias',
-        'Este aplicativo precisa de permissões para Câmera, Localização e Galeria para funcionar corretamente.'
-      );
       const mediaStatus = await requestMediaPermission();
       const cameraStatus = await requestCameraPermission();
       const { status: locationStatus } = await Location.requestForegroundPermissionsAsync();

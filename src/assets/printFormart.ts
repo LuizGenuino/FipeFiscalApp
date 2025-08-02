@@ -69,7 +69,7 @@ export function PrintFormat({ fishRecord, dataURL, logoBase64 }: PrintFormatProp
       <img src="${logoBase64}" alt="Logo FIPe" style="width:30vw; height:auto;">
       <div style="display:flex; flex-direction:column; justify-content:center;">
         <div style="font-size:5vw; font-weight:500; margin-bottom:4px;">Comprovante de Pesca</div>
-        <div style="font-size:7vw; font-weight:700;">Categoria ${category}</div>
+        <div style="font-size:6vw; font-weight:700;">Categoria ${category}</div>
       </div>
     </div>
 
@@ -98,8 +98,8 @@ export function PrintFormat({ fishRecord, dataURL, logoBase64 }: PrintFormatProp
 
     <!-- Nome e imagem do peixe
     // <div style="text-align:center; margin-bottom:10px;">
-    //   <div style="font-size:7vw; font-weight:700; margin-bottom:5px;">${fishRecord.species}</div>
-    //   <img src="${fishRecord.fish_image}" alt="${fishRecord.species}" style=" width:40vw; height:auto; max-height: 40vw; border:3px solid #000; border-radius:8px;">
+    //   <div style="font-size:7vw; font-weight:700; margin-bottom:5px;">${fishRecord.species_id}</div>
+    //   <img src="${fishRecord.fish_image}" alt="${fishRecord.species_id}" style=" width:40vw; height:auto; max-height: 40vw; border:3px solid #000; border-radius:8px;">
     // </div> -->
 
     <!-- Medida -->

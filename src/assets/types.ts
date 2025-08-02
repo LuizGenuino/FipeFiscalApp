@@ -1,6 +1,6 @@
 
 export type FishData = {
-    species: string;
+    species_id: string;
     photo: any;
     point: number;
     minimumSize?: number;
@@ -10,7 +10,7 @@ export type FishRecord = {
     code: string;
     team: string;
     registered_by: string;
-    species: string;
+    species_id: string;
     size: number;
     point: number;
     card_number: string;

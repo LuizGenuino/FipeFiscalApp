@@ -19,23 +19,23 @@ interface ScoreFormProps {
     setFishRecord: React.Dispatch<React.SetStateAction<FishRecord>>;
 }
 
-const fishSpecies: FishData[] = [
-    { species: "BARBADO", point: 30, photo: require("@/assets/images/Barbado.png") },
-    { species: "PIRAPUTANGA", point: 50, photo: require("@/assets/images/Piraputanga.png") },
-    { species: "JURUPOCA", point: 50, photo: require("@/assets/images/Jurupoca.png") },
-    { species: "PINTADO", point: 70, photo: require("@/assets/images/Pintado.png") },
-    { species: "CACHARA", point: 70, photo: require("@/assets/images/Cachara.png") },
-    { species: "JAÚ", point: 70, photo: require("@/assets/images/Jaú.png"), minimumSize: 40 },
-    { species: "PACU", point: 100, photo: require("@/assets/images/Pacu.png") },
+const fishspecies_id: FishData[] = [
+    { species_id: "BARBADO", point: 30, photo: require("@/assets/images/Barbado.png") },
+    { species_id: "PIRAPUTANGA", point: 50, photo: require("@/assets/images/Piraputanga.png") },
+    { species_id: "JURUPOCA", point: 50, photo: require("@/assets/images/Jurupoca.png") },
+    { species_id: "PINTADO", point: 70, photo: require("@/assets/images/Pintado.png") },
+    { species_id: "CACHARA", point: 70, photo: require("@/assets/images/Cachara.png") },
+    { species_id: "JAÚ", point: 70, photo: require("@/assets/images/Jaú.png"), minimumSize: 40 },
+    { species_id: "PACU", point: 100, photo: require("@/assets/images/Pacu.png") },
 ];
 
 export function ScoreForm({ fishRecord, setFishRecord }: ScoreFormProps) {
     const router = useRouter();
-    const [errors, setErrors] = useState({ species: false, size: false, ticketNumber: false });
+    const [errors, setErrors] = useState({ species_id: false, size: false, ticketNumber: false });
     const [minimumSizeError, setMinimumSizeError] = useState("");
 
     useEffect(() => {
-        if (fishRecord.species === "JAÚ" && +fishRecord.size < 40) {
+        if (fishRecord.species_id === "JAÚ" && +fishRecord.size < 40) {
             setMinimumSizeError("O tamanho mínimo do Jaú é 40cm!");
         } else if (minimumSizeError) {
             setMinimumSizeError("");
@@ -48,7 +48,7 @@ export function ScoreForm({ fishRecord, setFishRecord }: ScoreFormProps) {
     }, [fishRecord]);
 
     const calculateFishingScore = (): number => {
-        const points = fishSpecies.find(f => f.species === fishRecord.species)?.point || 0;
+        const points = fishspecies_id.find(f => f.species_id === fishRecord.species_id)?.point || 0;
         return +fishRecord.size * points;
     };
 
@@ -60,7 +60,7 @@ export function ScoreForm({ fishRecord, setFishRecord }: ScoreFormProps) {
         [setFishRecord]
     );
 
-    const selectedFish = fishSpecies.find(f => f.species === fishRecord.species);
+    const selectedFish = fishspecies_id.find(f => f.species_id === fishRecord.species_id);
 
     return (
         <View>
@@ -73,15 +73,15 @@ export function ScoreForm({ fishRecord, setFishRecord }: ScoreFormProps) {
                 <View style={styles.cardContent}>
                     <View style={styles.inputGroup}>
                         <Text style={styles.label}>Espécie do Peixe <Text style={{ color: "red" }}>*</Text></Text>
-                        <View style={[styles.pickerContainer, errors.species && styles.errorBorder]}>
+                        <View style={[styles.pickerContainer, errors.species_id && styles.errorBorder]}>
                             <Select
-                                onValueChange={(val) => handleChange("species", String(val))}
-                                options={fishSpecies.map(fish => ({ label: fish.species, value: fish.species }))}
-                                selectedValue={fishRecord.species || ""}
+                                onValueChange={(val) => handleChange("species_id", String(val))}
+                                options={fishspecies_id.map(fish => ({ label: fish.species_id, value: fish.species_id }))}
+                                selectedValue={fishRecord.species_id || ""}
                                 placeholder="Selecione a espécie do peixe"
                             />
                         </View>
-                        {errors.species && <Text style={styles.errorText}>Espécie é obrigatória.</Text>}
+                        {errors.species_id && <Text style={styles.errorText}>Espécie é obrigatória.</Text>}
                     </View>
 
                     {selectedFish && <Image source={selectedFish.photo} style={styles.mediaPreview} />}

@@ -81,7 +81,7 @@ export default function RecordFishList() {
                                         </View>
                                         <View style={styles.row} >
                                             <Text style={styles.cardText}>Espécie: </Text>
-                                            <Text style={[styles.cardText, { fontWeight: "bold" }]}>{item.species}</Text>
+                                            <Text style={[styles.cardText, { fontWeight: "bold" }]}>{item.species_id}</Text>
                                         </View>
                                         <View style={styles.row} >
                                             <Text style={styles.cardText}>Tamanho:</Text>
