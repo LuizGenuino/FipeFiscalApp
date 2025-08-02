@@ -4,7 +4,6 @@ import { LoadingProvider } from "@/src/contexts/LoadingContext";
 import LoadingModal from "@/src/components/LoadingModal";
 import AppBar from "../components/AppBar";
 import { ConnectionProvider } from "../contexts/connectionContext";
-import { Camera } from "../components/Camera";
 import { CameraProvider } from "../contexts/CameraContext";
 
 export default function RootLayout() {

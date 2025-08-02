@@ -89,7 +89,7 @@ export default function RecordFishList() {
                                         </View>
                                         <View style={styles.row} >
                                             <Text style={styles.cardText}>Pontuação:</Text>
-                                            <Text style={[styles.cardText, { fontWeight: "bold" }]}>{item.point} Pts</Text>
+                                            <Text style={[styles.cardText, { fontWeight: "bold" }]}>{item.total_points} Pts</Text>
                                         </View>
                                         <View style={styles.row}>
                                             <Text style={styles.cardText}>

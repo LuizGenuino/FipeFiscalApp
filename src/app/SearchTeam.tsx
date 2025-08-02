@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
     View,
     Text,
@@ -15,6 +15,18 @@ import { Ionicons } from '@expo/vector-icons';
 import { useLoading } from "@/src/contexts/LoadingContext";
 import { useRouter } from 'expo-router';
 import { useCameraContext } from '../contexts/CameraContext';
+import { Select } from '../components/Select';
+import { getModality, storeModality } from '../services/storage';
+
+const modalityType = [
+    { category: "Embarcada", modality: "Motorizada", code: "MO-" },
+    { category: "Embarcada", modality: "Caiaque", code: "CE-" },
+    { category: "Embarcada", modality: "Canoa", code: "CA-" },
+    { category: "Barranco", modality: "Infantil", code: "I1-" },
+    { category: "Barranco", modality: "Juvenil", code: "J1-" },
+    { category: "Barranco", modality: "PCD", code: "PC-" },
+    { category: "Barranco", modality: "Sênior", code: "SE-" },
+]
 
 
 export default function SearchTeam() {
@@ -22,7 +34,41 @@ export default function SearchTeam() {
     const router = useRouter();
     const [teamCode, setTeamCode] = useState('');
     const [layoutLoaded, setLayoutLoaded] = useState(false);
+    const [error, setError] = useState(false)
+    const [modality, setModality] = useState({ category: "", modality: "", code: "" })
     const { setLoading } = useLoading();
+
+    useEffect(() => {
+        setTeamCode(modality.code)
+    }, [modality])
+
+
+    useEffect(() => {
+        (async () => {
+            const modalitySelected = await getModality()
+            if (modalitySelected) {
+                const parsedData = JSON.parse(modalitySelected);
+                setModality(parsedData)
+                setTeamCode(parsedData.code)
+            }
+        })()
+    }, [])
+
+    useEffect(() => {
+        console.log(teamCode.length);
+        
+        if (teamCode.length < 3) {
+            setError(true)
+        }else {
+            setError(false)
+        }
+    }, [teamCode])
+
+    const handleChange = async (val: any) => {
+        setModality(val)
+        setTeamCode(val.code)
+        await storeModality(val)
+    }
 
     const handleSearch = async () => {
         const code = teamCode.trim().toUpperCase();
@@ -43,7 +89,7 @@ export default function SearchTeam() {
         }
 
         router.push({ pathname: '/RegisterScore', params: { team_code: code } });
-        setTeamCode("")
+        setTeamCode(modality.code)
     };
 
 
@@ -83,7 +129,7 @@ export default function SearchTeam() {
         setTeamCode(code);
 
         router.push({ pathname: '/RegisterScore', params: { team_code: code } });
-        setTeamCode("")
+        setTeamCode(modality.code)
     };
 
     return (
@@ -110,6 +156,24 @@ export default function SearchTeam() {
                     </View>
 
                     <View style={styles.form}>
+                        <View style={[styles.pickerContainer, error && styles.errorBorder]}>
+                            <Text style={{ fontSize: 10, marginTop: 5, marginLeft: 5 }} >Modalidade:</Text>
+                            <Select
+                                onValueChange={(val) => {
+                                    const selected = modalityType.find((tipo) => tipo.modality === val);
+                                    handleChange(selected);
+                                }}
+                                options={modalityType.map(tipo => ({
+                                    label: tipo.modality,
+                                    value: tipo.modality, // agora é uma string única
+                                }))}
+                                selectedValue={modality.modality || ""}
+                                placeholder="Selecione a Modalidade"
+                            />
+                        </View>
+                        {error && (
+                            <Text style={{ fontSize: 13, color: "red", fontWeight: '800', textAlign: "center", marginBottom: 5 }} >Selecione a Modalidade para inserir o codigo</Text>
+                        )}
                         <View style={styles.inputContainer}>
                             <Ionicons name="person-circle-outline" size={22} color="#64748b" style={styles.inputIcon} />
                             <TextInput
@@ -119,14 +183,15 @@ export default function SearchTeam() {
                                 onChangeText={handleCodeChange}
                                 autoCapitalize="characters"
                                 autoCorrect={false}
-                                keyboardType="default"
+                                keyboardType="decimal-pad"
                                 returnKeyType="search"
+                                editable={modality.code !== "" && teamCode.length > 2 ? true : false}
                                 onSubmitEditing={() => {
                                     // Validação final (opcional)
                                     const isValid = /^[A-Z]{2}-\d{3}$/.test(teamCode);
                                     if (!isValid) {
                                         alert('Código inválido. Use o formato AA-000');
-                                    } 
+                                    }
                                 }}
                             />
                         </View>
@@ -214,4 +279,14 @@ const styles = StyleSheet.create({
         elevation: 2,
     },
     qrButtonText: { color: '#2563eb', fontSize: 16, fontWeight: 'bold' },
+    pickerContainer: {
+        borderWidth: 1,
+        borderColor: "#d1d5db",
+        borderRadius: 8,
+        backgroundColor: "#fff",
+        marginVertical: 16
+    },
+    errorBorder: {
+        borderColor: "#ef4444",
+    },
 });

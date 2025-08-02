@@ -36,13 +36,14 @@
     "plugins": [
       "expo-router",
       [
-        "expo-camera",
-        {
-          "cameraPermission": "Permitir que o aplicativo acesse a câmera",
-          "microphonePermission": "Permitir que o aplicativo tenha acesso ao microfone",
-          "recordAudioAndroid": true
-        }
-      ],
+      "react-native-vision-camera",
+      {
+        "cameraPermissionText": "O aplicativo precisa acessar a câmera do seu dispositivo.",
+        "enableMicrophonePermission": true,
+        "microphonePermissionText": "O aplicativo precisa acessar o microfone do seu dispositivo.",
+        "enableCodeScanner": true
+      }
+    ],
       "expo-video",
       "expo-sqlite",
       [
@@ -60,7 +61,8 @@
         }
       ],
       "expo-video",
-      "expo-file-system"
+      "expo-file-system",
+      "react-native-vision-camera"
     ],
     "experiments": {
       "typedRoutes": true

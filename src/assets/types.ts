@@ -9,10 +9,12 @@ export type FishData = {
 export type FishRecord = {
     code: string;
     team: string;
+    category: string;
+    modality: string;
     registered_by: string;
     species_id: string;
     size: number;
-    point: number;
+    total_points: number;
     card_number: string;
     card_image: string;
     fish_image: string;

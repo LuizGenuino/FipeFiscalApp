@@ -1,5 +1,5 @@
 import { createContext, useContext, useState } from "react";
-import { Camera } from "../components/Camera";
+import { CameraView } from "../components/Camera";
 
 
 type CameraProps = {
@@ -38,7 +38,7 @@ export const CameraProvider = ({ children }: { children: React.ReactNode }) => {
     <CameraContext.Provider value={{ openCamera, closeCamera }}>
       {children}
       {cameraVisible && cameraProps && (
-        <Camera
+        <CameraView
           type={cameraProps.type}
           onMediaCaptured={cameraProps.onMediaCaptured}
           active={cameraVisible}

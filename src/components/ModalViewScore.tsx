@@ -111,7 +111,7 @@ export function ModalViewScore({
                   </Text>
                 </View>
                 <View style={styles.cardPoint}>
-                  <Text style={{ fontSize: 20, fontWeight: "bold" }}>Pontuação: {fishRecord.point} pts</Text>
+                  <Text style={{ fontSize: 20, fontWeight: "bold" }}>Pontuação: {fishRecord.total_points} pts</Text>
                 </View>
                 <View style={styles.row}>
                   <Text style={styles.modalText}>Fiscal:</Text>

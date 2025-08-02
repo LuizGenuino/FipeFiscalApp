@@ -19,10 +19,12 @@ class OfflineStorage {
       CREATE TABLE IF NOT EXISTS fish_catch (
         code TEXT PRIMARY KEY NOT NULL,
         team TEXT NOT NULL,
+        category TEXT NOT NULL,
+        modality TEXT NOT NULL,
         registered_by TEXT NOT NULL,
         species_id TEXT NOT NULL,
         size INTEGER NOT NULL,
-        point INTEGER NOT NULL,
+        total_points INTEGER NOT NULL,
         card_number TEXT NOT NULL,
         card_image TEXT NOT NULL,
         fish_image TEXT NOT NULL,
@@ -47,17 +49,19 @@ class OfflineStorage {
 
     await db.runAsync(
       `INSERT INTO fish_catch (
-                code, team, registered_by, species_id,
-                size, point, card_number, card_image,
+                code, team, category, modality, registered_by, species_id,
+                size, total_points, card_number, card_image,
                 fish_image, fish_video,latitude, longitude,  synchronized, created_at
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         data.code,
         data.team,
+        data.category,
+        data.modality,
         data.registered_by,
         data.species_id,
         data.size,
-        data.point,
+        data.total_points,
         data.card_number,
         data.card_image,
         data.fish_image,

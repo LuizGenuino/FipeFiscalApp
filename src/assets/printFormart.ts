@@ -34,24 +34,6 @@ export function PrintFormat({ fishRecord, dataURL, logoBase64 }: PrintFormatProp
     minute: '2-digit',
   }).replace(',', '');
 
-  let category = "";
-
-  if (fishRecord.team.includes("CE")) {
-    category = "Caiaque";
-  } else if (fishRecord.team.includes("CA")) {
-    category = "Canoa";
-  } else if (fishRecord.team.includes("MO")) {
-    category = "Motorizada";
-  } else if (fishRecord.team.includes("I1")) {
-    category = "Infantil";
-  } else if (fishRecord.team.includes("J1")) {
-    category = "Juvenil";
-  } else if (fishRecord.team.includes("PC")) {
-    category = "PCD";
-  } else if (fishRecord.team.includes("Sênior")) {
-    category = "Sênior";
-  }
-
 
 
   return `
@@ -69,7 +51,7 @@ export function PrintFormat({ fishRecord, dataURL, logoBase64 }: PrintFormatProp
       <img src="${logoBase64}" alt="Logo FIPe" style="width:30vw; height:auto;">
       <div style="display:flex; flex-direction:column; justify-content:center;">
         <div style="font-size:5vw; font-weight:500; margin-bottom:4px;">Comprovante de Pesca</div>
-        <div style="font-size:6vw; font-weight:700;">Categoria ${category}</div>
+        <div style="font-size:6vw; font-weight:700;">Categoria ${fishRecord.modality}</div>
       </div>
     </div>
 
@@ -110,7 +92,7 @@ export function PrintFormat({ fishRecord, dataURL, logoBase64 }: PrintFormatProp
 
     <!-- Pontuação com borda tracejada -->
     <div style="font-size:7vw; font-weight:bold; padding:12px; border:5px dashed #000000; border-radius:10px; text-align:center; margin:8px 0;">
-      Pontuação: ${fishRecord.point} Pts
+      Pontuação: ${fishRecord.total_points} Pts
     </div>
 
     <!-- Fiscal -->

@@ -42,8 +42,8 @@ export function ScoreForm({ fishRecord, setFishRecord }: ScoreFormProps) {
         }
 
         const newPoints = calculateFishingScore();
-        if (newPoints !== fishRecord.point) {
-            setFishRecord(prev => ({ ...prev, point: newPoints }));
+        if (newPoints !== fishRecord.total_points) {
+            setFishRecord(prev => ({ ...prev, total_points: newPoints }));
         }
     }, [fishRecord]);
 
@@ -117,7 +117,7 @@ export function ScoreForm({ fishRecord, setFishRecord }: ScoreFormProps) {
             <View style={styles.card}>
                 <View style={styles.cardHeader}>
                     <Ionicons name="podium" size={24} color="#2563eb" />
-                    <Text style={styles.cardTitle}>Pontuação da Pesca: {fishRecord.point}</Text>
+                    <Text style={styles.cardTitle}>Pontuação da Pesca: {fishRecord.total_points}</Text>
                 </View>
             </View>
         </View>

@@ -4,7 +4,7 @@ import { Modal, Pressable, StyleSheet, Text, TouchableOpacity, FlatList, View } 
 
 interface SelectOption {
     label: string;
-    value: string | number;
+    value: any;
 }
 
 type OnValueChange = (value: string | number) => void;
@@ -23,7 +23,7 @@ export function Select({ options, selectedValue, onValueChange, placeholder = "S
     const selectedItem = options.find((item) => item.value.toString() === selectedValue);
 
     return (
-        <View style={styles.container}>
+        <View style={styles.container} >
             <TouchableOpacity style={styles.select} onPress={() => setModalVisible(true)}>
                 <Text style={selectedItem ? styles.text : styles.placeholder}>
                     {selectedItem ? selectedItem.label : placeholder}
