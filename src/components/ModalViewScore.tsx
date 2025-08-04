@@ -40,7 +40,7 @@ export function ModalViewScore({
   ) => (
     <View style={styles.card}>
       <View style={styles.cardHeader}>
-        <Ionicons name={isVideo ? "videocam" : "camera"} size={24} color="#2563eb" />
+        <Ionicons name={isVideo ? "videocam" : "camera"} size={24} color="#FB4803" />
         <Text style={styles.cardTitle}>{label}</Text>
       </View>
       <View style={styles.cardContent}>
@@ -235,7 +235,7 @@ const styles = StyleSheet.create({
   },
   modalButtonPrimary: {
     flex: 1,
-    backgroundColor: "#2563eb",
+    backgroundColor: "#FB4803",
     borderRadius: 8,
     padding: 12,
     marginLeft: 8,

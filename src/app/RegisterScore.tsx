@@ -237,7 +237,7 @@ export default function RegisterScore() {
                 <View style={styles.content}>
                     <View style={styles.card}>
                         <View style={styles.cardHeader}>
-                            <Ionicons name="person-add" size={24} color="#2563eb" />
+                            <Ionicons name="person-add" size={24} color="#FB4803" />
                             <Text style={styles.cardTitle}>Informações do Time</Text>
                         </View>
                         <View style={styles.cardContent}>
@@ -276,7 +276,7 @@ export default function RegisterScore() {
 }
 
 const styles = StyleSheet.create({
-    container: { flex: 1, backgroundColor: '#f0f9ff', marginBottom: "2%" },
+    container: { flex: 1, backgroundColor: '#FFE4C0', marginBottom: "2%" },
     scrollContent: { flexGrow: 1, padding: 24, },
     content: {},
     card: {
@@ -312,7 +312,7 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
     },
     submitButton: {
-        backgroundColor: '#2563eb',
+        backgroundColor: '#FB4803',
         borderRadius: 12,
         padding: 16,
         flexDirection: 'row',

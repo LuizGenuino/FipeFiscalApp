@@ -260,7 +260,7 @@ const styles = StyleSheet.create({
         paddingBottom: "20%",
     },
     captureButton: {
-        backgroundColor: "#2563eb",
+        backgroundColor: "#FB4803",
         borderRadius: 35,
         width: 70,
         height: 70,

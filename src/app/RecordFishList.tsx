@@ -46,7 +46,7 @@ export default function RecordFishList() {
         <View style={styles.container}>
             {fishRecord && <ModalViewScore fishRecord={fishRecord} setShowModal={setShowModal} showModal={showModal} handleConfirmSubmit={() => { }} qrRef={""} />}
             <View style={styles.header}>
-                <Ionicons name="browsers" size={60} color="#2563eb" />
+                <Ionicons name="browsers" size={60} color="#FB4803" />
                 <Text style={styles.title}>Lista de Pontuação</Text>
                 <Text style={styles.subtitle}>Historico dos Registros de Pontuações</Text>
             </View>
@@ -134,10 +134,10 @@ export default function RecordFishList() {
 }
 
 const styles = StyleSheet.create({
-    container: { flex: 1, backgroundColor: '#f0f9ff' },
+    container: { flex: 1, backgroundColor: '#FFE4C0' },
     scrollContent: { flexGrow: 1, justifyContent: 'center', alignItems: "center" },
     header: { alignItems: 'center' },
-    title: { fontSize: 26, fontWeight: 'bold', color: '#1e3a8a', marginTop: 12 },
+    title: { fontSize: 26, fontWeight: 'bold', color: '#FB4803', marginTop: 12 },
     subtitle: { fontSize: 16, color: '#475569', marginTop: 8, textAlign: 'center' },
     cardList: {
         maxWidth: 450,
@@ -173,7 +173,7 @@ const styles = StyleSheet.create({
     },
 
     modalButtonPrimary: {
-        backgroundColor: '#2563eb',
+        backgroundColor: '#FB4803',
         borderRadius: 8,
         padding: 12,
         marginTop: 10

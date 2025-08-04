@@ -75,7 +75,7 @@ export function ScoreForm({ fishRecord, setFishRecord }: ScoreFormProps) {
 
             <View style={styles.card}>
                 <View style={styles.cardHeader}>
-                    <Ionicons name="fish-sharp" size={24} color="#2563eb" />
+                    <Ionicons name="fish-sharp" size={24} color="#FB4803" />
                     <Text style={styles.cardTitle}>Dados do Peixe</Text>
                 </View>
                 <View style={styles.cardContent}>
@@ -124,7 +124,7 @@ export function ScoreForm({ fishRecord, setFishRecord }: ScoreFormProps) {
             </View>
             <View style={styles.card}>
                 <View style={styles.cardHeader}>
-                    <Ionicons name="podium" size={24} color="#2563eb" />
+                    <Ionicons name="podium" size={24} color="#FB4803" />
                     <Text style={styles.cardTitle}>Pontuação da Pesca: {fishRecord.total_points}</Text>
                 </View>
             </View>

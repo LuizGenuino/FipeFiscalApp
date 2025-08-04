@@ -16,7 +16,7 @@ import { AuthService } from '../services/controller';
 import { useLoading } from "@/src/contexts/LoadingContext";
 import * as Location from 'expo-location';
 import * as MediaLibrary from 'expo-media-library';
-import { useCameraPermission, useMicrophonePermission  } from 'react-native-vision-camera';
+import { useCameraPermission, useMicrophonePermission } from 'react-native-vision-camera';
 
 
 
@@ -27,8 +27,8 @@ export default function Index() {
     const { setLoading } = useLoading();
 
     const [mediaPermission, requestMediaPermission] = MediaLibrary.usePermissions();
-    const {hasPermission, requestPermission} = useCameraPermission();
-    const {hasPermission: hasMicPermission, requestPermission: requestMicPermission }= useMicrophonePermission();
+    const { hasPermission, requestPermission } = useCameraPermission();
+    const { hasPermission: hasMicPermission, requestPermission: requestMicPermission } = useMicrophonePermission();
     const [locationPermission, setLocationPermission] = useState<boolean | null>(null);
 
     useEffect(() => {
@@ -59,7 +59,7 @@ export default function Index() {
 
             if (
                 mediaStatus?.status !== 'granted' ||
-                !cameraStatus  ||
+                !cameraStatus ||
                 locationStatus !== 'granted' ||
                 !microphoneStatus
             ) {
@@ -92,10 +92,10 @@ export default function Index() {
         }
 
         console.log(`Permissão de mídia: ${mediaPermission?.status}, Câmera: ${hasPermission}, Localização: ${locationPermission}, Microfone: ${hasMicPermission}`);
-        
+
 
         if (
-            mediaPermission?.status !== 'granted' || !hasPermission || !locationPermission  || !hasMicPermission
+            mediaPermission?.status !== 'granted' || !hasPermission || !locationPermission || !hasMicPermission
         ) {
             Alert.alert('Permissões não concedidas', 'Verifique as permissões do app antes de continuar.');
             return;
@@ -125,7 +125,7 @@ export default function Index() {
         >
             <View style={styles.content}>
                 <View style={styles.header}>
-                    <Ionicons name="fish" size={80} color="#2563eb" />
+                    <Ionicons name="fish" size={80} color="#FB4803" />
                     <Text style={styles.title}>Fiscal de Pesca</Text>
                     <Text style={styles.subtitle}>Sistema de Registro de Pescas</Text>
                 </View>
@@ -163,7 +163,7 @@ export default function Index() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#f0f9ff',
+        backgroundColor: '#FFE4C0',
     },
     content: {
         flex: 1,
@@ -178,7 +178,7 @@ const styles = StyleSheet.create({
     title: {
         fontSize: 28,
         fontWeight: 'bold',
-        color: '#1e40af',
+        color: '#FB4803',
         marginTop: 20,
     },
     subtitle: {
@@ -214,7 +214,7 @@ const styles = StyleSheet.create({
         color: '#1f2937',
     },
     button: {
-        backgroundColor: '#2563eb',
+        backgroundColor: '#FB4803',
         borderRadius: 12,
         height: 50,
         justifyContent: 'center',

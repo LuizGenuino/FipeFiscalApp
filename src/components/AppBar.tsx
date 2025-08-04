@@ -78,7 +78,7 @@ export default function AppBar() {
 
 const styles = StyleSheet.create({
     appBar: {
-        backgroundColor: '#2563eb',
+        backgroundColor: '#FB4803',
         padding: 10,
         flexDirection: 'row',
         justifyContent: 'space-between',
@@ -109,7 +109,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: "center",
-        backgroundColor: '#f0f9ff',
+        backgroundColor: '#FFE4C0',
     },
 
     buttonBack: {

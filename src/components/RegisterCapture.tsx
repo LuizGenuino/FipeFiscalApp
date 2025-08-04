@@ -74,7 +74,7 @@ export function RegisterCapture({ fishRecord, setFishRecord }: ScoreFormProps) {
   ) => (
     <View style={[styles.card, { width: isVideo ? "100%" : "48%" }]}>
       <View style={[styles.cardHeader, { padding: 8 }]}>
-        <Ionicons name={isVideo ? "videocam" : "camera"} size={24} color="#2563eb" />
+        <Ionicons name={isVideo ? "videocam" : "camera"} size={24} color="#FB4803" />
         <Text style={[styles.cardTitle, { fontSize: 16 }]}>{label}</Text>
       </View>
       <View style={styles.cardContent}>
@@ -105,7 +105,7 @@ export function RegisterCapture({ fishRecord, setFishRecord }: ScoreFormProps) {
           </View>
         ) : (
           <View style={styles.mediaPreview} >
-            <Ionicons name={isVideo ? "film" : "image"} size={80} color="#2563eb" />
+            <Ionicons name={isVideo ? "film" : "image"} size={80} color="#FB4803" />
             <View style={styles.mediaButtonsContainer}>
               <TouchableOpacity
                 style={styles.mediaButton}
@@ -125,7 +125,7 @@ export function RegisterCapture({ fishRecord, setFishRecord }: ScoreFormProps) {
   return (
     <View style={styles.card}>
       <View style={styles.cardHeader}>
-        <Ionicons name="camera" size={24} color="#2563eb" />
+        <Ionicons name="camera" size={24} color="#FB4803" />
         <Text style={styles.cardTitle}>Captura de Mídias</Text>
       </View>
       <View style={styles.cardContent}>
@@ -186,7 +186,7 @@ const styles = StyleSheet.create({
     height: 275,
     borderWidth: 1,
     borderRadius: 8,
-    borderColor: "#2563eb",
+    borderColor: "#FB4803",
     justifyContent: "center",
     alignItems: "center",
   },
@@ -208,7 +208,7 @@ const styles = StyleSheet.create({
   mediaButton: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#2563eb",
+    backgroundColor: "#FB4803",
     borderRadius: 8,
     paddingVertical: 12,
     paddingHorizontal: 16,

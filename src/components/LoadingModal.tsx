@@ -10,7 +10,7 @@ export default function LoadingModal() {
         <Modal transparent visible={loading} animationType="fade">
             <View style={styles.overlay}>
                 <View style={styles.modal}>
-                    <ActivityIndicator size="large" color="#2563eb" />
+                    <ActivityIndicator size="large" color="#FB4803" />
                     <Text style={styles.text}>Carregando...</Text>
                 </View>
             </View>
