@@ -193,16 +193,24 @@ export default function RegisterScore() {
 
     const saveMediaLocally = async (fileName: string, currentPath: string) => {
         try {
+            const from = currentPath.startsWith("file://") ? currentPath : `file://${currentPath}`;
             const newPath = `${FileSystem.documentDirectory}${fileName}`;
-            await FileSystem.copyAsync({ from: currentPath, to: newPath });
+
+            console.log("Copying from:", from);
+            console.log("Copying to:", newPath);
+
+            await FileSystem.copyAsync({ from, to: newPath });
+
             const asset = await MediaLibrary.createAssetAsync(newPath);
             await MediaLibrary.createAlbumAsync('Fiscal FIPE 2025', asset, false);
+
             setFishRecord(prev => ({ ...prev, fish_image: newPath }));
         } catch (error) {
             console.log("SaveMediaLocally Error", error);
             alert('Falha ao salvar mídia na galeria.');
         }
     };
+
 
     return (
         <SafeAreaView style={styles.container}>
@@ -217,6 +225,10 @@ export default function RegisterScore() {
                             <Text style={styles.infoText}>
                                 <Text style={styles.infoLabel}>Código do Time: </Text>
                                 {teamCode}
+                            </Text>
+                            <Text style={styles.infoText}>
+                                <Text style={styles.infoLabel}>Modalidade: </Text>
+                                {fishRecord.modality} - ({fishRecord.category})
                             </Text>
                         </View>
                     </View>

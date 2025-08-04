@@ -48,7 +48,8 @@ export function ModalViewScore({
           isVideo ? (
             <VideoPreview source={mediaUri} />
           ) : (
-            <Image source={{ uri: mediaUri }} style={styles.mediaPreview} />
+            <Image source={{ uri: `file://${mediaUri}` }}
+            style={styles.mediaPreview} />
           )
         ) : (
           <Text style={styles.modalText}>Não disponível</Text>

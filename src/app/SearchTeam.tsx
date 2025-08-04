@@ -55,8 +55,6 @@ export default function SearchTeam() {
     }, [])
 
     useEffect(() => {
-        console.log(teamCode.length);
-        
         if (teamCode.length < 3) {
             setError(true)
         }else {

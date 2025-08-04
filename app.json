@@ -14,7 +14,12 @@
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSCameraUsageDescription": "O aplicativo precisa acessar a câmera do seu dispositivo.",
+        "NSMicrophoneUsageDescription": "O aplicativo precisa acessar o microfone do seu dispositivo."
+      },
+      "bundleIdentifier": "com.luizgenuino.FiscalFipeApp"
     },
     "android": {
       "adaptiveIcon": {
@@ -24,7 +29,13 @@
       "edgeToEdgeEnabled": true,
       "permissions": [
         "android.permission.CAMERA",
-        "android.permission.RECORD_AUDIO"
+        "android.permission.RECORD_AUDIO",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE",
+        "android.permission.ACCESS_MEDIA_LOCATION",
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.ACCESS_FINE_LOCATION",
+        "android.permission.INTERNET"
       ],
       "package": "com.luizgenuino.FiscalFipeApp"
     },
@@ -36,14 +47,14 @@
     "plugins": [
       "expo-router",
       [
-      "react-native-vision-camera",
-      {
-        "cameraPermissionText": "O aplicativo precisa acessar a câmera do seu dispositivo.",
-        "enableMicrophonePermission": true,
-        "microphonePermissionText": "O aplicativo precisa acessar o microfone do seu dispositivo.",
-        "enableCodeScanner": true
-      }
-    ],
+        "react-native-vision-camera",
+        {
+          "cameraPermissionText": "O aplicativo precisa acessar a câmera do seu dispositivo.",
+          "enableMicrophonePermission": true,
+          "microphonePermissionText": "O aplicativo precisa acessar o microfone do seu dispositivo.",
+          "enableCodeScanner": true
+        }
+      ],
       "expo-video",
       "expo-sqlite",
       [
