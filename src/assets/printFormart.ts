@@ -50,18 +50,18 @@ export function PrintFormat({ fishRecord, dataURL, logoBase64 }: PrintFormatProp
     <div style="display:flex; align-items:center; justify-content:center; gap:20px; margin-bottom:30px;">
       <img src="${logoBase64}" alt="Logo FIPe" style="width:30vw; height:auto;">
       <div style="display:flex; flex-direction:column; justify-content:center;">
-        <div style="font-size:5vw; font-weight:500; margin-bottom:4px;">Comprovante de Pesca</div>
+        <div style="font-size:6vw; font-weight:500; margin-bottom:4px;">Comprovante de Pesca</div>
         <div style="font-size:6vw; font-weight:700;">Categoria ${fishRecord.modality}</div>
       </div>
     </div>
 
     <!-- QRCode centralizado -->
-    <div style="width:30vw; height:30vw; border:2px solid #000000; border-radius:12px; padding:10px; background:#ffffff;">
+    <div style="width:50vw; height:50vw; border:2px solid #000000; border-radius:12px; padding:10px; background:#ffffff;">
       <img src="data:image/png;base64,${dataURL}" alt="QRCode" style="width:100%; height:100%; object-fit:contain; border-radius:8px;">
     </div>
 
     <!-- Código principal -->
-    <div style="font-size:5vw; font-weight:bold; margin-top:8px; margin-bottom:10px; text-align:center;">
+    <div style="font-size:6vw; font-weight:bold; margin-top:8px; margin-bottom:10px; text-align:center;">
       ${fishRecord.code}
     </div>
 
@@ -71,44 +71,42 @@ export function PrintFormat({ fishRecord, dataURL, logoBase64 }: PrintFormatProp
     <!-- Código do Time e Nº da Ficha alinhados e com mesmo tamanho -->
     <div style="display:flex; justify-content:center; gap:10px; width:100%; margin-bottom:12px;">
       <div style="flex:1; width:50%; border:3px solid #000000; padding:6px; border-radius:6px; text-align:center; font-size:6vw;">
-        Código do Time:<br><strong>${fishRecord.team}</strong>
+       ${fishRecord.category === "Embarcada"? "Código do Time" : "Competidor"}:<br><strong>${fishRecord.team}</strong>
       </div>
       <div style="flex:1; width:50%; border:3px solid #000000; padding:6px; border-radius:6px; text-align:center; font-size:6vw;">
         Nº da Ficha:<br><strong>${fishRecord.card_number}</strong>
       </div>
     </div>
 
-    <!-- Nome e imagem do peixe
-    // <div style="text-align:center; margin-bottom:10px;">
-    //   <div style="font-size:7vw; font-weight:700; margin-bottom:5px;">${fishRecord.species_id}</div>
-    //   <img src="${fishRecord.fish_image}" alt="${fishRecord.species_id}" style=" width:40vw; height:auto; max-height: 40vw; border:3px solid #000; border-radius:8px;">
-    // </div> -->
+    <div style="text-align:center; margin-bottom:10px;">
+       <div style="font-size:8vw; font-weight:700; margin-bottom:5px;">${fishRecord.species_id || "Peixe de Barranco"}</div>
+    </div> 
 
     <!-- Medida -->
-    <div style="display:flex; justify-content:space-between; width:100%; font-size:5vw; margin:4vw 0;">
+    <div style="display:flex; justify-content:space-between; width:100%; font-size:6vw; margin:4vw 0;">
       <span>Medida:</span>
       <strong>${fishRecord.size} cm</strong>
     </div>
 
     <!-- Pontuação com borda tracejada -->
-    <div style="font-size:7vw; font-weight:bold; padding:12px; border:5px dashed #000000; border-radius:10px; text-align:center; margin:8px 0;">
+    <div style="font-size:8vw; font-weight:bold; padding:12px; border:5px dashed #000000; border-radius:10px; text-align:center; margin:8px 0;">
       Pontuação: ${fishRecord.total_points} Pts
     </div>
 
     <!-- Fiscal -->
-    <div style="display:flex; justify-content:space-between; width:100%; font-size:5vw; margin-top:4vw;">
+    <div style="display:flex; justify-content:space-between; width:100%; font-size:5.5vw; margin-top:4vw;">
       <span>Fiscal:</span>
       <strong>${fishRecord.registered_by}</strong>
     </div>
 
     <!-- Data -->
-    <div style="display:flex; justify-content:space-between; width:100%; font-size:5vw; margin:4vw 0;">
+    <div style="display:flex; justify-content:space-between; width:100%; font-size:5.5vw; margin:4vw 0;">
       <span>Data:</span>
       <strong>${createdAt}</strong>
     </div>
 
     <!-- Coordenada -->
-    <div style="display:flex; justify-content:space-between; width:100%; font-size:5vw;">
+    <div style="display:flex; justify-content:space-between; width:100%; font-size:5.5vw;">
       <span>Coordenada:</span>
       <strong>${fishRecord.latitude ? fishRecord.latitude.toFixed(6) : 0} x ${fishRecord?.longitude ? fishRecord?.longitude.toFixed(6) : 0}</strong>
     </div>

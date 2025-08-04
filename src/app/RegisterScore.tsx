@@ -44,7 +44,7 @@ export default function RegisterScore() {
         category: "",
         modality: "",
         registered_by: "",
-        species_id: "PACU",
+        species_id: "",
         size: 30,
         total_points: 0,
         card_number: '123',
@@ -105,17 +105,17 @@ export default function RegisterScore() {
 
     const validateForm = () => {
         const fields = [
-            { field: fishRecord.species_id, message: 'Selecione a espécie do peixe' },
-            { field: fishRecord.size, message: 'Digite o tamanho do peixe' },
-            { field: fishRecord.card_number, message: 'Digite o número da ficha' },
-            { field: fishRecord.registered_by, message: 'Digite o nome do responsável pelo registro' },
-            { field: fishRecord.fish_image, message: 'Capture a imagem do peixe na régua' },
-            { field: fishRecord.fish_video, message: 'Capture o vídeo da soltura do peixe' },
-            { field: fishRecord.card_image, message: 'Capture a imagem da ficha' },
+            { field: fishRecord.species_id, message: 'Selecione a espécie do peixe', role: fishRecord.category === "Embarcada" },
+            { field: fishRecord.size, message: 'Digite o tamanho do peixe', role: true },
+            { field: fishRecord.card_number, message: 'Digite o número da ficha', role: true },
+            { field: fishRecord.registered_by, message: 'Digite o nome do responsável pelo registro', role: true },
+            { field: fishRecord.fish_image, message: 'Capture a imagem do peixe na régua', role: true },
+            { field: fishRecord.fish_video, message: 'Capture o vídeo da soltura do peixe', role: true },
+            { field: fishRecord.card_image, message: 'Capture a imagem da ficha', role: true },
         ];
 
-        for (let { field, message } of fields) {
-            if (!field) {
+        for (let { field, message, role } of fields) {
+            if (!field && role) {
                 Alert.alert('Erro', message);
                 return false;
             }
@@ -141,11 +141,11 @@ export default function RegisterScore() {
     };
 
     const handlePrint = async () => {
-        console.log("qaqui qrrcode",qrRef.current);
-        
+        console.log("qaqui qrrcode", qrRef.current);
+
         if (!qrRef.current) return;
         console.log("aqui foi");
-        
+
         try {
             qrRef.current?.toDataURL(async (dataURL) => {
                 console.log("aqui foi1");
@@ -174,7 +174,6 @@ export default function RegisterScore() {
 
     const onConfirmAndPrint = async () => {
         setLoading(true);
-        setShowConfirmModal(false)
         await handleConfirmSubmit();
         await handlePrint();
     };

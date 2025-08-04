@@ -77,11 +77,7 @@ export function ModalViewScore({
                   <QRCode
                     value={`https://google.com/${fishRecord.code}`}
                     size={200}
-                    getRef={(c) => {
-                      if (c) {
-                        qrRef.current = c;
-                      }
-                    }}
+                    getRef={(c) => { qrRef.current = c }}
                   />
                 </View>
 
@@ -91,7 +87,7 @@ export function ModalViewScore({
               <View style={styles.modalSection}>
                 <View style={styles.row}>
                   <View style={[styles.blockItems, { width: "48%" }]}>
-                    <Text style={styles.modalText}>Código do Time:</Text>
+                    <Text style={styles.modalText}>{fishRecord.category === "Embarcada" ? "Código do Time:" : "Competidor:"}</Text>
                     <Text style={[styles.modalText, { fontWeight: "bold" }]}>
                       {fishRecord.team}
                     </Text>
@@ -106,7 +102,7 @@ export function ModalViewScore({
                 </View>
                 <View style={styles.row}>
                   <Text style={styles.cardEspecies_id}>
-                    {fishRecord.species_id}
+                    {fishRecord.species_id || "Peixe de Barranco"}
                   </Text>
                 </View>
                 <View style={styles.row}>

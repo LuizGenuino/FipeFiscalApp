@@ -35,16 +35,24 @@ export function ScoreForm({ fishRecord, setFishRecord }: ScoreFormProps) {
     const [minimumSizeError, setMinimumSizeError] = useState("");
 
     useEffect(() => {
-        if (fishRecord.species_id === "JAÚ" && +fishRecord.size < 40) {
-            setMinimumSizeError("O tamanho mínimo do Jaú é 40cm!");
-        } else if (minimumSizeError) {
+        if (fishRecord.category === "Embarcada") {
+            if (fishRecord.species_id === "JAÚ" && +fishRecord.size < 40) {
+                setMinimumSizeError("O tamanho mínimo do Jaú é 40cm!");
+            } else if (minimumSizeError) {
+                setMinimumSizeError("");
+            }
+
+            const newPoints = calculateFishingScore();
+            if (newPoints !== fishRecord.total_points) {
+                setFishRecord(prev => ({ ...prev, total_points: newPoints }));
+            }
+        } else if (+fishRecord.size * 10 !== fishRecord.total_points) {
+            console.log("Categoria não motorizada, não é necessário calcular pontos.");
+            
             setMinimumSizeError("");
+            setFishRecord(prev => ({ ...prev, total_points: +fishRecord.size * 10}));
         }
 
-        const newPoints = calculateFishingScore();
-        if (newPoints !== fishRecord.total_points) {
-            setFishRecord(prev => ({ ...prev, total_points: newPoints }));
-        }
     }, [fishRecord]);
 
     const calculateFishingScore = (): number => {
@@ -71,7 +79,7 @@ export function ScoreForm({ fishRecord, setFishRecord }: ScoreFormProps) {
                     <Text style={styles.cardTitle}>Dados do Peixe</Text>
                 </View>
                 <View style={styles.cardContent}>
-                    <View style={styles.inputGroup}>
+                    {fishRecord.category === "Embarcada" && (<View style={styles.inputGroup}>
                         <Text style={styles.label}>Espécie do Peixe <Text style={{ color: "red" }}>*</Text></Text>
                         <View style={[styles.pickerContainer, errors.species_id && styles.errorBorder]}>
                             <Select
@@ -82,7 +90,7 @@ export function ScoreForm({ fishRecord, setFishRecord }: ScoreFormProps) {
                             />
                         </View>
                         {errors.species_id && <Text style={styles.errorText}>Espécie é obrigatória.</Text>}
-                    </View>
+                    </View>)}
 
                     {selectedFish && <Image source={selectedFish.photo} style={styles.mediaPreview} />}
 
