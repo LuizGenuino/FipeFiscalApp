@@ -49,7 +49,7 @@ export function ModalViewScore({
             <VideoPreview source={mediaUri} />
           ) : (
             <Image source={{ uri: `file://${mediaUri}` }}
-            style={styles.mediaPreview} />
+              style={styles.mediaPreview} />
           )
         ) : (
           <Text style={styles.modalText}>Não disponível</Text>
@@ -77,7 +77,11 @@ export function ModalViewScore({
                   <QRCode
                     value={`https://google.com/${fishRecord.code}`}
                     size={200}
-                    getRef={(c) => (qrRef.current = c)}
+                    getRef={(c) => {
+                      if (c) {
+                        qrRef.current = c;
+                      }
+                    }}
                   />
                 </View>
 

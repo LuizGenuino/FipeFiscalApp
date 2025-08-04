@@ -24,6 +24,8 @@ import * as Print from 'expo-print';
 import * as FileSystem from 'expo-file-system';
 import { getModality } from '../services/storage';
 
+
+
 type QRCodeRef = {
     toDataURL: (callback: (dataURL: string) => void) => void;
 };
@@ -42,10 +44,10 @@ export default function RegisterScore() {
         category: "",
         modality: "",
         registered_by: "",
-        species_id: "",
-        size: 0,
+        species_id: "PACU",
+        size: 30,
         total_points: 0,
-        card_number: '',
+        card_number: '123',
         card_image: '',
         fish_image: '',
         fish_video: '',
@@ -139,17 +141,22 @@ export default function RegisterScore() {
     };
 
     const handlePrint = async () => {
-
+        console.log("qaqui qrrcode",qrRef.current);
+        
         if (!qrRef.current) return;
-
+        console.log("aqui foi");
+        
         try {
-            await qrRef.current.toDataURL(async (dataURL) => {
+            qrRef.current?.toDataURL(async (dataURL) => {
+                console.log("aqui foi1");
                 const logoBase64 = await getBase64Logo();
                 const html = PrintFormat({ fishRecord, dataURL, logoBase64 });
-
+                console.log("aqui foi2");
                 try {
+                    console.log("aqui foi3");
                     await Print.printAsync({ html });
                     setShowConfirmModal(false);
+                    console.log("aqui foi4");
                     Alert.alert('Sucesso', 'Registro enviado com sucesso!', [
                         { text: 'OK', onPress: () => router.back() },
                     ]);
@@ -173,19 +180,31 @@ export default function RegisterScore() {
     };
 
     const handleConfirmSubmit = async () => {
-        setLoading(true)
-        await saveMediaLocally(`${fishRecord.team}_fish_image_${fishRecord.code}.jpg`, fishRecord.fish_image);
-        await saveMediaLocally(`${fishRecord.team}_card_image_${fishRecord.code}.jpg`, fishRecord.card_image);
-        await saveMediaLocally(`${fishRecord.team}_fish_video_${fishRecord.code}.mp4`, fishRecord.fish_video);
+        setLoading(true);
 
-        const result = await new FishRecordService().setFishRecord(fishRecord);
+        const fish_image_uri = await saveMediaLocally(`${fishRecord.team}_fish_image_${fishRecord.code}.jpg`, fishRecord.fish_image);
+        const card_image_uri = await saveMediaLocally(`${fishRecord.team}_card_image_${fishRecord.code}.jpg`, fishRecord.card_image);
+        const fish_video_uri = await saveMediaLocally(`${fishRecord.team}_fish_video_${fishRecord.code}.mp4`, fishRecord.fish_video);
+
+        // ✅ Atualiza o estado apenas uma vez, com todos os caminhos corretos
+        setFishRecord(prev => ({
+            ...prev,
+            fish_image: fish_image_uri,
+            card_image: card_image_uri,
+            fish_video: fish_video_uri
+        }));
+
+        const result = await new FishRecordService().setFishRecord({
+            ...fishRecord,
+            fish_image: fish_image_uri,
+            card_image: card_image_uri,
+            fish_video: fish_video_uri
+        });
+
         setLoading(false);
 
         if (result.success) {
             setShowConfirmModal(false);
-            Alert.alert('Sucesso', 'Registro enviado com sucesso!', [
-                { text: 'OK', onPress: () => router.back() },
-            ]);
         } else {
             Alert.alert('Erro ao Salvar', result.message);
         }
@@ -204,10 +223,11 @@ export default function RegisterScore() {
             const asset = await MediaLibrary.createAssetAsync(newPath);
             await MediaLibrary.createAlbumAsync('Fiscal FIPE 2025', asset, false);
 
-            setFishRecord(prev => ({ ...prev, fish_image: newPath }));
+            return newPath; // ✅ retorna o novo caminho
         } catch (error) {
             console.log("SaveMediaLocally Error", error);
             alert('Falha ao salvar mídia na galeria.');
+            return currentPath; // fallback
         }
     };
 
