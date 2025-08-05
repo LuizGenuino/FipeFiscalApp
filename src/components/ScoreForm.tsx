@@ -47,7 +47,6 @@ export function ScoreForm({ fishRecord, setFishRecord }: ScoreFormProps) {
                 setFishRecord(prev => ({ ...prev, total_points: newPoints }));
             }
         } else if (+fishRecord.size * 10 !== fishRecord.total_points) {
-            console.log("Categoria não motorizada, não é necessário calcular pontos.");
             
             setMinimumSizeError("");
             setFishRecord(prev => ({ ...prev, total_points: +fishRecord.size * 10}));

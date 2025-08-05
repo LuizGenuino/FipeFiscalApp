@@ -92,9 +92,6 @@ export default function Index() {
             return;
         }
 
-        console.log(`Permissão de mídia: ${mediaPermission?.status}, Câmera: ${hasPermission}, Localização: ${locationPermission}, Microfone: ${hasMicPermission}`);
-
-
         if (
             mediaPermission?.status !== 'granted' || !hasPermission || !locationPermission || !hasMicPermission
         ) {
@@ -126,7 +123,7 @@ export default function Index() {
         >
             <View style={styles.content}>
                 <View style={styles.header}>
-                    <Image source={require("@/assets/images/logofipe.0ab6fef0.png")} style={{ maxWidth: 140, height: 80, objectFit: "fill"}} />
+                    <Image source={require("@/assets/images/logofipe.0ab6fef0.png")} style={{ maxWidth: 280, height: 160, objectFit: "fill"}} />
                     <Text style={styles.title}>Fiscal de Pesca</Text>
                     <Text style={styles.subtitle}>Sistema de Registro de Pescas</Text>
                 </View>

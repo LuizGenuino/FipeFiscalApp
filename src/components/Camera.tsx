@@ -69,7 +69,6 @@ export function CameraView({ type, onMediaCaptured, active, onClose }: CameraCom
             if (cameraRef.current) {
                 const photo = await cameraRef.current.takePhoto();
                 
-                console.log("Photo captured:", photo);
                 
                 onMediaCaptured("photo", photo);
             }
@@ -99,7 +98,6 @@ export function CameraView({ type, onMediaCaptured, active, onClose }: CameraCom
 
                 await cameraRef.current.startRecording({
                     onRecordingFinished: (video) => {
-                        console.log("Video recorded:", video);
                         onMediaCaptured("video", video);
                     },
                     onRecordingError: (error) => {

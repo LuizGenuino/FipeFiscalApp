@@ -46,7 +46,6 @@ class OfflineStorage {
   // Armazena pontuação offline
   async setFishRecord(data: FishRecord) {
     const db = this.getDb();
-    console.log("data sql:", data);
     
     await db.runAsync(
       `INSERT INTO fish_catch (
@@ -89,7 +88,6 @@ class OfflineStorage {
 
   // editar pontuação por código
   async updateFishRecord(data: FishRecord) {
-    console.log("data;", data);
     
     const db = this.getDb();
     await db.runAsync(

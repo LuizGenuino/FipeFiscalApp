@@ -142,22 +142,16 @@ export default function RegisterScore() {
     };
 
     const handlePrint = async () => {
-        console.log("qaqui qrrcode", qrRef.current);
 
         if (!qrRef.current) return;
-        console.log("aqui foi");
 
         try {
             qrRef.current?.toDataURL(async (dataURL) => {
-                console.log("aqui foi1");
                 const logoBase64 = await getBase64Logo();
                 const html = PrintFormat({ fishRecord, dataURL, logoBase64 });
-                console.log("aqui foi2");
                 try {
-                    console.log("aqui foi3");
                     await Print.printAsync({ html });
                     setShowConfirmModal(false);
-                    console.log("aqui foi4");
 
                 } catch (err) {
                     console.error("Erro ao imprimir:", err);
@@ -216,8 +210,6 @@ export default function RegisterScore() {
             const from = currentPath.startsWith("file://") ? currentPath : `file://${currentPath}`;
             const newPath = `${FileSystem.documentDirectory}${fileName}`;
 
-            console.log("Copying from:", from);
-            console.log("Copying to:", newPath);
 
             await FileSystem.copyAsync({ from, to: newPath });
 

@@ -50,7 +50,6 @@ export function RegisterCapture({ fishRecord, setFishRecord }: ScoreFormProps) {
 
     if (type === "photo") {
       if (photoType === "fish") {
-        console.log("Foto do peixe capturada:", data.path);
         
         setFishRecord((prev) => ({ ...prev, fish_image: data.path ?? "" }));
       } else {
