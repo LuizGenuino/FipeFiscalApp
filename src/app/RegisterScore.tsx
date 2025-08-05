@@ -194,15 +194,13 @@ export default function RegisterScore() {
 
         setLoading(false);
 
-        if (result.success) {
-            setShowConfirmModal(false);
-            await handlePrint();
-            Alert.alert('Sucesso', 'Registro enviado com sucesso!', [
-                { text: 'OK', onPress: () => router.back() },
-            ]);
-        } else {
-            router.back();
-        }
+
+        setShowConfirmModal(false);
+        await handlePrint();
+        Alert.alert('Sucesso', 'Registro enviado com sucesso!', [
+            { text: 'OK', onPress: () => router.back() },
+        ]);
+
     };
 
     const saveMediaLocally = async (fileName: string, currentPath: string) => {
