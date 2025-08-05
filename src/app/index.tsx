@@ -92,13 +92,6 @@ export default function Index() {
             return;
         }
 
-        if (
-            mediaPermission?.status !== 'granted' || !hasPermission || !locationPermission || !hasMicPermission
-        ) {
-            Alert.alert('Permissões não concedidas', 'Verifique as permissões do app antes de continuar.');
-            return;
-        }
-
         setIsLoading(true);
         setLoading(true);
 

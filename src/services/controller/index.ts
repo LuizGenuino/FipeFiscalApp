@@ -97,13 +97,7 @@ export class FishRecordService {
                 if (response.status === 200 || response.status === 201) {
                     data.synchronized = true
                     await offlineStorage.updateFishRecord(data)
-                } else {
-                    return {
-                        success: false,
-                        message: "Erro ao Salvar Pontuação da Equipe",
-                        data: null
-                    }
-                }
+                } 
             }
 
             return {
@@ -133,12 +127,6 @@ export class FishRecordService {
                 if (response.status === 200 || response.status === 201) {
                     data.synchronized = true
                     await offlineStorage.updateFishRecord(data)
-                } else {
-                    return {
-                        success: false,
-                        message: "Erro ao Salvar Pontuação da Equipe",
-                        data: null
-                    }
                 }
             } else {
                 return {

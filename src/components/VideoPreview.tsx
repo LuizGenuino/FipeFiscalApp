@@ -7,8 +7,7 @@ interface VideoPreviewProps {
 
 export default function VideoPreview({ source }: VideoPreviewProps) {
     const player = useVideoPlayer(source, player => {
-        player.loop = true;
-        player.play();
+        player.loop = false;
     });
 
     return (

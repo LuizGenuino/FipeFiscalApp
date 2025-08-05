@@ -201,7 +201,7 @@ export default function RegisterScore() {
                 { text: 'OK', onPress: () => router.back() },
             ]);
         } else {
-            Alert.alert('Erro ao Salvar', result.message);
+            router.back();
         }
     };
 

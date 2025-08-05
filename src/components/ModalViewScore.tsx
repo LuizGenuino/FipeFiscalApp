@@ -14,6 +14,8 @@ import { Ionicons } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
 import React from "react";
 
+// motorizada', 'canoa', 'caiaque', 'infanto-juvenil', 'senior' e 'pcd'
+
 interface ModalConfirmScoreProps {
     showModal: boolean;
     setShowModal: (visible: boolean) => void;
@@ -58,6 +60,31 @@ export function ModalViewScore({
         </View>
     );
 
+    let modalidade = ""
+
+    if (fishRecord.modality === "Motorizada") {
+        modalidade = "motorizada"
+    }
+    if (fishRecord.modality === "Caiaque") {
+        modalidade = "caiaque"
+    }
+    if (fishRecord.modality === "Canoa") {
+        modalidade = "canoa"
+    }
+    if (fishRecord.modality === "Infantil") {
+        modalidade = "infanto-juvenil"
+    }
+    if (fishRecord.modality === "Juvenil") {
+        modalidade = "infanto-juvenil"
+    }
+    if (fishRecord.modality === "Sênior") {
+        modalidade = "senior"
+    }
+    if (fishRecord.modality === "PCD") {
+        modalidade = "pcd"
+    }
+
+
     return (
         <Modal
             visible={showModal}
@@ -75,7 +102,7 @@ export function ModalViewScore({
                             <View style={styles.qrCodeCard}>
                                 <View style={styles.blockItems}>
                                     <QRCode
-                                        value={`https://google.com/${fishRecord.code}`}
+                                        value={`https://42.fipecaceres.com/painel-de-gestao/ranking?categoria=${modalidade}&codigo_peixe=${fishRecord.code}`}
                                         size={200}
                                         getRef={(c) => { qrRef.current = c }}
                                     />

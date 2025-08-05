@@ -106,7 +106,7 @@ export function PrintFormat({ fishRecord, dataURL, logoBase64 }: PrintFormatProp
     </div>
 
     <!-- Coordenada -->
-    <div style="display:flex; justify-content:space-between; width:100%; font-size:5.5vw;">
+    <div style="display:flex; justify-content:space-between; width:100%; font-size:5.5vw; margin-bottom: 4vw;">
       <span>Coordenada:</span>
       <strong>${fishRecord.latitude ? fishRecord.latitude.toFixed(6) : 0} x ${fishRecord?.longitude ? fishRecord?.longitude.toFixed(6) : 0}</strong>
     </div>

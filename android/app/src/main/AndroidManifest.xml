@@ -31,6 +31,7 @@
         <category android:name="android.intent.category.DEFAULT"/>
         <category android:name="android.intent.category.BROWSABLE"/>
         <data android:scheme="fiscalfipeapp"/>
+        <data android:scheme="exp+fiscalfipeapp"/>
       </intent-filter>
     </activity>
   </application>
