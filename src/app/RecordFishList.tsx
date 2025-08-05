@@ -111,6 +111,12 @@ export default function RecordFishList() {
         }
     };
 
+    const handleModal = (item: FishRecord) => {
+        setLoading(false)
+        setFishRecord(item)
+        setShowModal(true)
+        setLoading(false)
+    }
 
 
     return (
@@ -130,10 +136,7 @@ export default function RecordFishList() {
                         <View style={styles.cardList}>
                             {fishRecordList.map((item: FishRecord) => {
                                 return (
-                                    <TouchableOpacity style={styles.cardItem} key={item.code} onPress={() => {
-                                        setFishRecord(item)
-                                        setShowModal(true)
-                                    }} >
+                                    <TouchableOpacity style={styles.cardItem} key={item.code} onPress={() => handleModal(item)} >
                                         <View style={styles.row} >
                                             <Text style={styles.cardText}>ID:</Text>
                                             <Text style={[styles.cardText, { fontWeight: "bold" }]}>{item.code}</Text>

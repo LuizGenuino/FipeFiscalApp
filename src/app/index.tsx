@@ -9,6 +9,7 @@ import {
     ActivityIndicator,
     KeyboardAvoidingView,
     Platform,
+    Image,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
@@ -125,7 +126,7 @@ export default function Index() {
         >
             <View style={styles.content}>
                 <View style={styles.header}>
-                    <Ionicons name="fish" size={80} color="#FB4803" />
+                    <Image source={require("@/assets/images/logofipe.0ab6fef0.png")} style={{ maxWidth: 140, height: 80, objectFit: "fill"}} />
                     <Text style={styles.title}>Fiscal de Pesca</Text>
                     <Text style={styles.subtitle}>Sistema de Registro de Pescas</Text>
                 </View>

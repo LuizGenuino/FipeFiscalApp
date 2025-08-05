@@ -46,7 +46,8 @@ class OfflineStorage {
   // Armazena pontuação offline
   async setFishRecord(data: FishRecord) {
     const db = this.getDb();
-
+    console.log("data sql:", data);
+    
     await db.runAsync(
       `INSERT INTO fish_catch (
                 code, team, category, modality, registered_by, species_id,

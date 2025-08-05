@@ -94,9 +94,15 @@ export class FishRecordService {
                 const apiService = new ApiService('/fish_catch');
                 const response: any = await apiService.post(data);
                 console.log("response api: ", response);
-                if (response) {
+                if (response.status === 200 || response.status === 201) {
                     data.synchronized = true
                     await offlineStorage.updateFishRecord(data)
+                } else {
+                    return {
+                        success: false,
+                        message: "Erro ao Salvar Pontuação da Equipe",
+                        data: null
+                    }
                 }
             }
 
@@ -124,16 +130,22 @@ export class FishRecordService {
                 const apiService = new ApiService('/fish_catch');
                 const response: any = await apiService.post(data);
                 console.log("response api: ", response);
-                if (response) {
+                if (response.status === 200 || response.status === 201) {
                     data.synchronized = true
                     await offlineStorage.updateFishRecord(data)
+                } else {
+                    return {
+                        success: false,
+                        message: "Erro ao Salvar Pontuação da Equipe",
+                        data: null
+                    }
                 }
-            }else{
+            } else {
                 return {
-                success: false,
-                message: "Sem Acesso a Internet!",
-                data: null
-            }
+                    success: false,
+                    message: "Sem Acesso a Internet!",
+                    data: null
+                }
             }
 
             return {

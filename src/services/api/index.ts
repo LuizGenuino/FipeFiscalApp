@@ -136,10 +136,9 @@ export class ApiService {
                 maxContentLength: Infinity,
             };
 
-            let response: AxiosResponse;
 
             if (method === 'GET') {
-                response = await axios.get(url, config);
+                return await axios.get(url, config);
             } else {
                 const formData = await toFilteredFormData(body);
                 console.log("🟡 FormData preparado:", formData);
@@ -153,11 +152,9 @@ export class ApiService {
                     },
                 };
 
-                response = await this.uploadWithRNFetchBlob(url, formData);
-            }
 
-            console.log("✅ Resposta recebida:", response.status);
-            return response;
+                return await this.uploadWithRNFetchBlob(url, formData);
+            }
 
         } catch (error: any) {
             const axiosError = error as AxiosError | any;
@@ -181,62 +178,38 @@ export class ApiService {
         }
     }
 
-    private async uploadWithRNFetchBlob(url: string, formData: any, token?: string) {
-        const config = {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'multipart/form-data',
-        };
+    private async uploadWithRNFetchBlob(url: string, formData: any, token?: string): Promise<AxiosResponse<any>> {
+        try {
+            const config = {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'multipart/form-data',
+            };
 
-        const response = await RNFetchBlob.fetch(
-            'POST',
-            url,
-            config,
-            formData._parts.map(([name, value]: any) => {
-                return typeof value === 'string'
-                    ? { name, data: value }
-                    : {
-                        name,
-                        filename: value.name,
-                        type: value.type,
-                        data: RNFetchBlob.wrap(value.uri.replace('file://', ''))
-                    };
-            })
-        );
+            const response = await RNFetchBlob.fetch(
+                'POST',
+                url,
+                config,
+                formData._parts.map(([name, value]: any) => {
+                    return typeof value === 'string'
+                        ? { name, data: value }
+                        : {
+                            name,
+                            filename: value.name,
+                            type: value.type,
+                            data: RNFetchBlob.wrap(value.uri.replace('file://', ''))
+                        };
+                })
+            );
 
-        return response.json();
-    }
-
-    private buildHeaders(token: string | null): Record<string, string> {
-        const headers: Record<string, string> = {};
-
-        if (token) {
-            headers['Authorization'] = `Bearer ${token}`;
-        }
-
-        // Não defina Content-Type manualmente - o Axios irá definir automaticamente
-        // com o boundary correto para FormData
-
-        return headers;
-    }
-
-    private handleAxiosError(error: any): never {
-        console.error("🔴 Axios error:", error);
-
-        if (error.code === 'ECONNABORTED') {
-            throw new Error('Tempo limite da requisição excedido');
-        }
-
-        if (error.response) {
-            // Erro com resposta do servidor
-            const message = error.response?.data?.message ||
-                `Erro ${error.response.status}: ${error.response.statusText}`;
-            throw new Error(message);
-        } else if (error.request) {
-            // Erro sem resposta do servidor (problema de rede)
-            throw new Error('Falha na conexão de rede. Verifique sua internet.');
-        } else {
-            // Erro na configuração da requisição
-            throw new Error('Erro na configuração da requisição');
+            return {
+                data: response.json(),
+                status: response.info().status,
+                headers: response.info().headers,
+                config: {}
+            } as AxiosResponse<any>;
+        } catch (error) {
+            console.error('🔴 Upload error:', error);
+            throw error;
         }
     }
 
