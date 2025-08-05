@@ -68,7 +68,7 @@ class OfflineStorage {
         data.fish_video,
         data.latitude || 0,
         data.longitude || 0,
-        data.synchronized || false,
+        data.synchronized ? 1 : 0,
         data.created_at || new Date().toISOString()
       ]
     );
@@ -84,6 +84,39 @@ class OfflineStorage {
   async getFishRecordByQuery(query: string, parameter: string) {
     const db = this.getDb();
     return await db.getAllAsync(`SELECT * FROM teams WHERE ${query} = ?`, [parameter]);
+  }
+
+  // editar pontuação por código
+  async updateFishRecord(data: FishRecord) {
+    console.log("data;", data);
+    
+    const db = this.getDb();
+    await db.runAsync(
+      `UPDATE fish_catch SET
+                team = ?, category = ?, modality = ?, registered_by = ?,
+                species_id = ?, size = ?, total_points = ?, card_number = ?,
+                card_image = ?, fish_image = ?, fish_video = ?,
+                latitude = ?, longitude = ?, synchronized = ?, created_at = ?
+            WHERE code = ?`,
+      [
+        data.team,
+        data.category,
+        data.modality,
+        data.registered_by,
+        data.species_id,
+        data.size,
+        data.total_points,
+        data.card_number,
+        data.card_image,
+        data.fish_image,
+        data.fish_video,
+        data.latitude || 0,
+        data.longitude || 0,
+        data.synchronized ? 1 : 0,
+        data.created_at || new Date().toISOString(),
+        data.code
+      ]
+    );
   }
 
   // apaga banco de dados

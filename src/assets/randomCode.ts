@@ -8,7 +8,7 @@ export function generateUniqueCode(): string {
     let code: string;
 
     do {
-        const randomLetters = getRandomLetter() + getRandomLetter();
+        const randomLetters = Array.from({ length: 4 }, getRandomLetter).join('');
         const randomNumbers = Array.from({ length: 4 }, getRandomDigit).join('');
         code = randomLetters + randomNumbers;
     } while (usedCodes.has(code));

@@ -89,19 +89,56 @@ export class FishRecordService {
     async setFishRecord(data: FishRecord): Promise<ControllerResponse> {
         data.size = +data.size
         try {
+            await offlineStorage.setFishRecord(data)
             if ((await isOnline())) {
                 const apiService = new ApiService('/fish_catch');
-                const response: ApiResponse = await apiService.post(data);
+                const response: any = await apiService.post(data);
                 console.log("response api: ", response);
-                if (response.success) {
+                if (response) {
                     data.synchronized = true
+                    await offlineStorage.updateFishRecord(data)
                 }
             }
-            await offlineStorage.setFishRecord(data)
 
             return {
                 success: true,
                 message: "Pontuação Cadastrada Com Sucesso",
+                data: null
+            }
+
+
+        } catch (error: any) {
+            console.error('Erro ao Salvar Pontuação da Equipe:', error);
+            return {
+                success: false,
+                message: error?.message || 'Erro ao Salvar Pontuação da Equipe',
+                data: null,
+            };
+        }
+    }
+
+    async synchronizeFishRecord(data: FishRecord): Promise<ControllerResponse> {
+        data.size = +data.size
+        try {
+            if ((await isOnline())) {
+                const apiService = new ApiService('/fish_catch');
+                const response: any = await apiService.post(data);
+                console.log("response api: ", response);
+                if (response) {
+                    data.synchronized = true
+                    await offlineStorage.updateFishRecord(data)
+                }
+            }else{
+                return {
+                success: false,
+                message: "Sem Acesso a Internet!",
+                data: null
+            }
+            }
+
+            return {
+                success: true,
+                message: "Pontuação Sincronizada Com Sucesso",
                 data: null
             }
 

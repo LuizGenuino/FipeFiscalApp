@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import { useConnection } from '../contexts/connectionContext';
 import { AuthService } from '../services/controller';
+import { getLastSync } from '../services/storage';
 
 export default function AppBar() {
     const router = useRouter();
@@ -11,6 +12,7 @@ export default function AppBar() {
     const { connected } = useConnection();
     const [inspectorName, setInspectorName] = useState("")
     const pathname = usePathname();
+    const [lastSync, setLastSync] = useState("")
 
     const isSearchTeamPage = pathname === "/SearchTeam"
 
@@ -18,7 +20,16 @@ export default function AppBar() {
 
     useEffect(() => {
         initialize()
+
     }, []);
+
+    useEffect(() => {
+        (async () => {
+            const data: any = await getLastSync()
+            const parsedData = JSON.parse(data);
+            setLastSync(parsedData)
+        })()
+    }, [])
 
     const initialize = async () => {
         await checkAuth();
@@ -70,7 +81,7 @@ export default function AppBar() {
                         ]}
                     />
                 </View>
-                <Text> Sincronizado em: { }</Text>
+                <Text> Sincronizado em: {lastSync || ""}</Text>
             </View>
         </View>
     );

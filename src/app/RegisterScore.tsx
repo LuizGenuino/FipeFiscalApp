@@ -126,7 +126,7 @@ export default function RegisterScore() {
 
     const handleSubmit = async () => {
         if (!validateForm()) return;
-
+        setLoading(true)
         let location = await Location.getCurrentPositionAsync({});
 
         setFishRecord(prev => ({
@@ -138,6 +138,7 @@ export default function RegisterScore() {
         }));
 
         setShowConfirmModal(true);
+        setLoading(false)
     };
 
     const handlePrint = async () => {
@@ -157,9 +158,7 @@ export default function RegisterScore() {
                     await Print.printAsync({ html });
                     setShowConfirmModal(false);
                     console.log("aqui foi4");
-                    Alert.alert('Sucesso', 'Registro enviado com sucesso!', [
-                        { text: 'OK', onPress: () => router.back() },
-                    ]);
+
                 } catch (err) {
                     console.error("Erro ao imprimir:", err);
                 }
@@ -175,7 +174,6 @@ export default function RegisterScore() {
     const onConfirmAndPrint = async () => {
         setLoading(true);
         await handleConfirmSubmit();
-        await handlePrint();
     };
 
     const handleConfirmSubmit = async () => {
@@ -204,6 +202,10 @@ export default function RegisterScore() {
 
         if (result.success) {
             setShowConfirmModal(false);
+            await handlePrint();
+            Alert.alert('Sucesso', 'Registro enviado com sucesso!', [
+                { text: 'OK', onPress: () => router.back() },
+            ]);
         } else {
             Alert.alert('Erro ao Salvar', result.message);
         }

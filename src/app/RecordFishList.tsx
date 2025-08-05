@@ -14,6 +14,7 @@ import { FishRecordService } from '../services/controller';
 import { FishRecord } from '../assets/types';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ModalViewScore } from '../components/ModalViewScore';
+import { storeLastSync } from '../services/storage';
 
 
 export default function RecordFishList() {
@@ -42,9 +43,79 @@ export default function RecordFishList() {
 
     }
 
+    const synchronizeFishRecord = async (item: FishRecord) => {
+        try {
+            if (item.synchronized) {
+                Alert.alert(
+                    "Item já sincronizado",
+                    "Este registro já foi sincronizado com o servidor.",
+                    [{ text: "OK", onPress: () => setShowModal(false) }]
+                );
+                return;
+            }
+
+            setLoading(true);
+
+            const result = await fishRecordService.synchronizeFishRecord(item);
+
+            if (!result.success) {
+                throw new Error(result.message || "Erro na sincronização");
+            }
+
+
+
+        } catch (error: any) {
+            console.error("Erro na sincronização:", error);
+
+            Alert.alert(
+                "Erro",
+                error.message || "Falha ao sincronizar. Verifique sua conexão.",
+                [{ text: "OK" }]
+            );
+
+        } finally {
+            setLoading(false);
+            setShowModal(false);
+        }
+    };
+
+    const synchronizeAllFishRecord = async () => {
+        try {
+            // Filtra apenas registros não sincronizados
+            const pendingSync = fishRecordList?.filter(item => !item.synchronized) || [];
+
+            if (pendingSync.length === 0) {
+                await storeLastSync()
+                Alert.alert("Sem Pendencias", "Todas as Pontuação foram sicronizadas!")
+                return;
+            }
+
+            setLoading(true);
+
+
+            // Sincronização sequencial com feedback
+            for (const [index, record] of pendingSync.entries()) {
+                try {
+                    await synchronizeFishRecord(record);
+
+                } catch (error) {
+                    console.warn(`Falha no registro ${record.code}:`, error);
+                    // Continua para o próximo mesmo com erro
+                }
+            }
+
+        } catch (error) {
+            console.error("Erro geral:", error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+
+
     return (
         <View style={styles.container}>
-            {fishRecord && <ModalViewScore fishRecord={fishRecord} setShowModal={setShowModal} showModal={showModal} handleConfirmSubmit={() => { }} qrRef={""} />}
+            {fishRecord && <ModalViewScore fishRecord={fishRecord} setShowModal={setShowModal} showModal={showModal} handleConfirmSubmit={synchronizeFishRecord} qrRef={""} />}
             <View style={styles.header}>
                 <Ionicons name="browsers" size={60} color="#FB4803" />
                 <Text style={styles.title}>Lista de Pontuação</Text>
@@ -120,7 +191,7 @@ export default function RecordFishList() {
                             })}
                             <TouchableOpacity
                                 style={styles.modalButtonPrimary}
-                                onPress={() => { }}
+                                onPress={synchronizeAllFishRecord}
                             >
                                 <Text style={styles.modalButtonPrimaryText}>Sincronizar Tudo</Text>
                             </TouchableOpacity>
