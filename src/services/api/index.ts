@@ -6,8 +6,8 @@ import mime from 'mime';
 import { Platform } from "react-native";
 import RNFetchBlob from 'react-native-blob-util';
 
-const API_BASE_URL_EMBARCADA = "https://42.fipecaceres.com/dev/afericao-embarcada/backend/api/v1";
-const API_BASE_URL_BARRANCO = "https://42.fipecaceres.com/dev/afericao-barranco/backend/api/v1";
+const API_BASE_URL_EMBARCADA = process.env.EXPO_PUBLIC_API_URL_EMBARCADA;
+const API_BASE_URL_BARRANCO = process.env.EXPO_PUBLIC_API_URL_BARRANCO;
 
 // Configuração global do Axios para melhor tratamento de erros
 axios.interceptors.request.use(config => {
