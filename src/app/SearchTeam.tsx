@@ -65,7 +65,7 @@ export default function SearchTeam() {
         await storeModality(val);
     };
 
-    const isCodeValid = (code: string) => /^[A-Z]{2}-\d{3}$/.test(code);
+    const isCodeValid = (code: string) => /^[A-Z0-9]{2}-\d{3}$/.test(code);
 
     const handleCodeChange = (text: string) => {
         let cleaned = text.toUpperCase().replace(/[^A-Z0-9]/g, '');

@@ -8,6 +8,7 @@ import RNFetchBlob from 'react-native-blob-util';
 
 const API_BASE_URL_EMBARCADA = process.env.EXPO_PUBLIC_API_URL_EMBARCADA;
 const API_BASE_URL_BARRANCO = process.env.EXPO_PUBLIC_API_URL_BARRANCO;
+const API_KEY = process.env.EXPO_PUBLIC_API_KEY || ""
 
 // Configuração global do Axios para melhor tratamento de erros
 axios.interceptors.request.use(config => {
@@ -128,7 +129,7 @@ export class ApiService {
 
             const config = {
                 headers: {
-                    'Authorization': token ? `Bearer ${token}` : '',
+                    'Authentication': token ? token : '',
                     'Accept': 'application/json',
                 },
                 timeout: 60000,
@@ -143,20 +144,12 @@ export class ApiService {
                 const formData = await toFilteredFormData(body);
                 console.log("🟡 FormData preparado:", formData);
 
-                // Configuração específica para FormData
-                const formConfig = {
-                    ...config,
-                    headers: {
-                        ...config.headers,
-                        'Content-Type': 'multipart/form-data',
-                    },
-                };
-
-
-                return await this.uploadWithRNFetchBlob(url, formData);
+                return await this.uploadWithRNFetchBlob(url, formData, token || null);
             }
 
         } catch (error: any) {
+            console.log("error: ", error);
+
             const axiosError = error as AxiosError | any;
             console.error("🔴 Erro detalhado:", {
                 message: axiosError.message,
@@ -178,17 +171,32 @@ export class ApiService {
         }
     }
 
-    private async uploadWithRNFetchBlob(url: string, formData: any, token?: string): Promise<AxiosResponse<any>> {
+    private async uploadWithRNFetchBlob(url: string, formData: any, token?: string | null): Promise<AxiosResponse<any>> {
         try {
+            console.log("token:", token);
+
             const config = {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'multipart/form-data',
+                "Authentication": token ? token : '',
+                "Content-Type": "multipart/form-data",
             };
 
-            const response = await RNFetchBlob.fetch(
+            console.log(config);
+            console.log(url);
+
+
+
+            const response = await RNFetchBlob.config({
+                timeout: 60000 // 30 segundos
+            }).fetch(
                 'POST',
                 url,
-                config,
+                {
+                    Authentication: token ? token : '',
+                    otherHeader: "foo",
+                    // this is required, otherwise it won't be process as a multipart/form-data request
+                    'Content-Type': 'multipart/form-data',
+
+                },
                 formData._parts.map(([name, value]: any) => {
                     return typeof value === 'string'
                         ? { name, data: value }
@@ -199,8 +207,16 @@ export class ApiService {
                             data: RNFetchBlob.wrap(value.uri.replace('file://', ''))
                         };
                 })
-            );
+            ).uploadProgress((written, total) => {
+                console.log("uploaded", written / total);
+            });
 
+            console.log("response: ", response);
+
+
+            if (response.info().status >= 400) {
+                throw new Error(`Erro ${response.info().status}: ${await response.text()}`);
+            }
             return {
                 data: response.json(),
                 status: response.info().status,
@@ -215,11 +231,8 @@ export class ApiService {
 
     private async getToken(): Promise<string | null> {
         try {
-            const userAuth = await getUser();
-            if (!userAuth) return null;
 
-            const user = JSON.parse(userAuth);
-            return user?.token || null;
+            return API_KEY || null;
         } catch (err) {
             console.warn('Erro ao buscar token:', err);
             return null;
