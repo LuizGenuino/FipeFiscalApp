@@ -127,8 +127,10 @@ export default function RegisterScore() {
     const handleSubmit = async () => {
         if (!validateForm()) return;
         setLoading(true)
+        console.log("busca localização");
+        
         let location = await Location.getCurrentPositionAsync({});
-
+        console.log("localização atual:", location);
         setFishRecord(prev => ({
             ...prev,
             code: generateUniqueCode(),
@@ -142,7 +144,8 @@ export default function RegisterScore() {
     };
 
     const handlePrint = async () => {
-
+        console.log("função print: ", !!qrRef.current);
+        
         if (!qrRef.current) return;
 
         try {

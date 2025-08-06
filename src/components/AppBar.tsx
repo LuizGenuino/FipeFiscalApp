@@ -9,10 +9,9 @@ import { getLastSync } from '../services/storage';
 export default function AppBar() {
     const router = useRouter();
     const authService = new AuthService();
-    const { connected } = useConnection();
+    const { connected, lastSync, setLastSync } = useConnection();
     const [inspectorName, setInspectorName] = useState("")
     const pathname = usePathname();
-    const [lastSync, setLastSync] = useState("")
 
     const isSearchTeamPage = pathname === "/SearchTeam"
 

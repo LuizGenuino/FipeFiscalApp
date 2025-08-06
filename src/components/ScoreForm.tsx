@@ -194,6 +194,6 @@ const styles = StyleSheet.create({
     mediaPreview: {
         maxWidth: "100%",
         height: 250,
-        objectFit: "fill"
+        objectFit: "contain"
     },
 });

@@ -3,12 +3,15 @@ import NetInfo from '@react-native-community/netinfo';
 
 type ConnectionContextType = {
     connected: boolean;
+    lastSync: string;
+    setLastSync: (value: string) => void;
 };
 
 const ConnectionContext = createContext<ConnectionContextType | undefined>(undefined);
 
 export function ConnectionProvider({ children }: { children: React.ReactNode }) {
     const [connected, setConnected] = useState(false);
+    const [lastSync, setLastSync] = useState("")
 
     useEffect(() => {
         const unsubscribe = NetInfo.addEventListener(state => {
@@ -22,7 +25,7 @@ export function ConnectionProvider({ children }: { children: React.ReactNode }) 
     }, []);
 
     return (
-        <ConnectionContext.Provider value={{ connected }}>
+        <ConnectionContext.Provider value={{ connected, lastSync, setLastSync}}>
             {children}
         </ConnectionContext.Provider>
     );

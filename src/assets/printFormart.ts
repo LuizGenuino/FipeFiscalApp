@@ -4,7 +4,7 @@ import { Asset } from 'expo-asset';
 
 export const getBase64Logo = async (): Promise<string> => {
   try {
-    const asset = Asset.fromModule(require('@/assets/images/logofipe.0ab6fef0.png'));
+    const asset = Asset.fromModule(require('../../assets/images/logofipe.0ab6fef0.png'));
     await asset.downloadAsync(); // garante que foi carregada
     const base64 = await FileSystem.readAsStringAsync(asset.localUri!, {
       encoding: FileSystem.EncodingType.Base64,

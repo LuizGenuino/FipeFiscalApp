@@ -15,6 +15,7 @@ import { FishRecord } from '../assets/types';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ModalViewScore } from '../components/ModalViewScore';
 import { storeLastSync } from '../services/storage';
+import { useConnection } from '@/contexts/connectionContext';
 
 
 export default function RecordFishList() {
@@ -24,6 +25,7 @@ export default function RecordFishList() {
     const [fishRecord, setFishRecord] = useState<FishRecord>()
     const [showModal, setShowModal] = useState<boolean>(false)
     const { setLoading } = useLoading();
+    const { setLastSync } = useConnection();
 
     useEffect(() => {
         getFishRecordList()
@@ -86,6 +88,7 @@ export default function RecordFishList() {
 
             if (pendingSync.length === 0) {
                 await storeLastSync()
+                setLastSync(new Date().toLocaleString())
                 Alert.alert("Sem Pendencias", "Todas as Pontuação foram sicronizadas!")
                 return;
             }
@@ -108,6 +111,8 @@ export default function RecordFishList() {
             console.error("Erro geral:", error);
         } finally {
             setLoading(false);
+            await storeLastSync()
+            setLastSync(new Date().toLocaleString())
         }
     };
 
