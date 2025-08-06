@@ -1,4 +1,4 @@
-import { FishRecord } from "@/src/assets/types";
+import { FishRecord } from "@/assets/types";
 import { getUser } from "../storage";
 import * as FileSystem from 'expo-file-system';
 import axios, { AxiosResponse, AxiosError } from 'axios';
@@ -6,9 +6,9 @@ import mime from 'mime';
 import { Platform } from "react-native";
 import RNFetchBlob from 'react-native-blob-util';
 
-const API_BASE_URL_EMBARCADA = process.env.EXPO_PUBLIC_API_URL_EMBARCADA;
-const API_BASE_URL_BARRANCO = process.env.EXPO_PUBLIC_API_URL_BARRANCO;
-const API_KEY = process.env.EXPO_PUBLIC_API_KEY || ""
+const API_BASE_URL_EMBARCADA = process.env.EXPO_PUBLIC_API_URL_EMBARCADA || "https://42.fipecaceres.com/dev/afericao-embarcada/backend/api/v1";
+const API_BASE_URL_BARRANCO = process.env.EXPO_PUBLIC_API_URL_BARRANCO || "https://42.fipecaceres.com/dev/afericao-barranco/backend/api/v1";
+const API_KEY = process.env.EXPO_PUBLIC_API_KEY || "8Hl5vPkL@9qF!zX3mN*7RtS&Y"
 
 // Configuração global do Axios para melhor tratamento de erros
 axios.interceptors.request.use(config => {

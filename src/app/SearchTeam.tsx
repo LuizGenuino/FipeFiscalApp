@@ -12,7 +12,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
-import { useLoading } from "@/src/contexts/LoadingContext";
+import { useLoading } from "@/contexts/LoadingContext";
 import { useRouter } from 'expo-router';
 import { useCameraContext } from '../contexts/CameraContext';
 import { Select } from '../components/Select';

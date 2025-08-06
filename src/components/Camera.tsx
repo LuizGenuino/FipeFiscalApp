@@ -240,7 +240,7 @@ const styles = StyleSheet.create({
     },
     timerContainer: {
         position: "absolute",
-        top: 50,
+        top: "6%",
         alignSelf: "center",
         backgroundColor: "rgba(243, 5, 5, 0.83)",
         paddingHorizontal: 16,

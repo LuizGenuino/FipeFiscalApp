@@ -50,7 +50,7 @@ export function RegisterCapture({ fishRecord, setFishRecord }: ScoreFormProps) {
 
     if (type === "photo") {
       if (photoType === "fish") {
-        
+
         setFishRecord((prev) => ({ ...prev, fish_image: data.path ?? "" }));
       } else {
         setFishRecord((prev) => ({ ...prev, card_image: data.path ?? "" }));
@@ -103,19 +103,23 @@ export function RegisterCapture({ fishRecord, setFishRecord }: ScoreFormProps) {
             </View>
           </View>
         ) : (
-          <View style={styles.mediaPreview} >
-            <Ionicons name={isVideo ? "film" : "image"} size={80} color="#FB4803" />
-            <View style={styles.mediaButtonsContainer}>
-              <TouchableOpacity
-                style={styles.mediaButton}
-                onPress={onCapture}
-                accessible
-                accessibilityLabel={`Capturar ${label}`}
-              >
-                <Text style={styles.mediaButtonText}>Capturar {label}</Text>
-              </TouchableOpacity>
+          <TouchableOpacity
+            onPress={onCapture}
+          >
+            <View style={styles.mediaPreview} >
+              <Ionicons name={isVideo ? "film" : "image"} size={80} color="#FB4803" />
+              <View style={styles.mediaButtonsContainer}>
+                <TouchableOpacity
+                  style={styles.mediaButton}
+                  onPress={onCapture}
+                  accessible
+                  accessibilityLabel={`Capturar ${label}`}
+                >
+                  <Text style={styles.mediaButtonText}>Capturar {label}</Text>
+                </TouchableOpacity>
+              </View>
             </View>
-          </View>
+          </TouchableOpacity>
         )}
       </View>
     </View>

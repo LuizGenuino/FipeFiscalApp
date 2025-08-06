@@ -8,7 +8,7 @@ import {
     TouchableOpacity,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useLoading } from "@/src/contexts/LoadingContext";
+import { useLoading } from "@/contexts/LoadingContext";
 import { useRouter } from 'expo-router';
 import { FishRecordService } from '../services/controller';
 import { FishRecord } from '../assets/types';

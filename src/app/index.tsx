@@ -14,7 +14,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { AuthService } from '../services/controller';
-import { useLoading } from "@/src/contexts/LoadingContext";
+import { useLoading } from "@/contexts/LoadingContext";
 import * as Location from 'expo-location';
 import * as MediaLibrary from 'expo-media-library';
 import { useCameraPermission, useMicrophonePermission } from 'react-native-vision-camera';
@@ -116,7 +116,7 @@ export default function Index() {
         >
             <View style={styles.content}>
                 <View style={styles.header}>
-                    <Image source={require("@/assets/images/logofipe.0ab6fef0.png")} style={{ maxWidth: 280, height: 160, objectFit: "fill"}} />
+                    <Image source={require("../../assets/images/logofipe.0ab6fef0.png")} style={{ maxWidth: 280, height: 160, objectFit: "fill"}} />
                     <Text style={styles.title}>Fiscal de Pesca</Text>
                     <Text style={styles.subtitle}>Sistema de Registro de Pescas</Text>
                 </View>

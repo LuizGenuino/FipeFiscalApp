@@ -4,7 +4,7 @@ import {
     FishData,
     FishRecord,
     LoginData,
-} from "@/src/assets/types";
+} from "@/assets/types";
 import { ApiService } from "../api";
 import { clearUser, getUser, storeUser } from "../storage";
 import OfflineStorage from "../sql";

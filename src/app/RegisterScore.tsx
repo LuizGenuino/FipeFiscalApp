@@ -10,8 +10,8 @@ import {
 } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { ScoreForm } from '@/src/components/ScoreForm';
-import { RegisterCapture } from '@/src/components/RegisterCapture';
+import { ScoreForm } from '@/components/ScoreForm';
+import { RegisterCapture } from '@/components/RegisterCapture';
 import { FishRecord } from '../assets/types';
 import { generateUniqueCode } from '../assets/randomCode';
 import { getBase64Logo, PrintFormat } from '../assets/printFormart';

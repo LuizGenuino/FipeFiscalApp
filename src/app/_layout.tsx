@@ -1,7 +1,7 @@
 // app/_layout.tsx
 import { Stack, usePathname } from "expo-router";
-import { LoadingProvider } from "@/src/contexts/LoadingContext";
-import LoadingModal from "@/src/components/LoadingModal";
+import { LoadingProvider } from "../contexts/LoadingContext";
+import LoadingModal from "../components/LoadingModal";
 import AppBar from "../components/AppBar";
 import { ConnectionProvider } from "../contexts/connectionContext";
 import { CameraProvider } from "../contexts/CameraContext";

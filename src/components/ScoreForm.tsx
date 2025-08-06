@@ -20,13 +20,13 @@ interface ScoreFormProps {
 }
 
 const fishspecies_id: FishData[] = [
-    { species_id: "BARBADO", point: 30, photo: require("@/assets/images/Barbado.png") },
-    { species_id: "PIRAPUTANGA", point: 50, photo: require("@/assets/images/Piraputanga.png") },
-    { species_id: "JURUPOCA", point: 50, photo: require("@/assets/images/Jurupoca.png") },
-    { species_id: "PINTADO", point: 70, photo: require("@/assets/images/Pintado.png") },
-    { species_id: "CACHARA", point: 70, photo: require("@/assets/images/Cachara.png") },
-    { species_id: "JAÚ", point: 70, photo: require("@/assets/images/Jaú.png"), minimumSize: 40 },
-    { species_id: "PACU", point: 100, photo: require("@/assets/images/Pacu.png") },
+    { species_id: "BARBADO", point: 30, photo: require("../../assets/images/Barbado.jpeg") },
+    { species_id: "PIRAPUTANGA", point: 50, photo: require("../../assets/images/Piraputanga.jpeg") },
+    { species_id: "JURUPOCA", point: 50, photo: require("../../assets/images/Jurupoca.jpeg") },
+    { species_id: "PINTADO", point: 70, photo: require("../../assets/images/Pintado.jpeg") },
+    { species_id: "CACHARA", point: 70, photo: require("../../assets/images/Cachara.jpeg") },
+    { species_id: "JAÚ", point: 70, photo: require("../../assets/images/Jau.jpeg"), minimumSize: 40 },
+    { species_id: "PACU", point: 100, photo: require("../../assets/images/Pacu.jpeg") },
 ];
 
 export function ScoreForm({ fishRecord, setFishRecord }: ScoreFormProps) {
@@ -194,5 +194,6 @@ const styles = StyleSheet.create({
     mediaPreview: {
         maxWidth: "100%",
         height: 250,
+        objectFit: "fill"
     },
 });

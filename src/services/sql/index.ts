@@ -1,4 +1,4 @@
-import { FishRecord } from '@/src/assets/types';
+import { FishRecord } from '@/assets/types';
 import * as SQLite from 'expo-sqlite';
 
 class OfflineStorage {
