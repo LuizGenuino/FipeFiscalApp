@@ -1,30 +1,12 @@
 import { FishRecord } from "./types";
-import * as FileSystem from 'expo-file-system';
-import { Asset } from 'expo-asset';
-
-export const getBase64Logo = async (): Promise<string> => {
-  try {
-    const asset = Asset.fromModule(require('../../assets/images/logofipe.0ab6fef0.png'));
-    await asset.downloadAsync(); // garante que foi carregada
-    const base64 = await FileSystem.readAsStringAsync(asset.localUri!, {
-      encoding: FileSystem.EncodingType.Base64,
-    });
-    return `data:image/png;base64,${base64}`;
-  } catch (error) {
-    console.error("Error fetching logo:", error);
-    return "";
-
-  }
-};
 
 interface PrintFormatProps {
   fishRecord: FishRecord;
   dataURL: string;
-  logoBase64?: string;
 }
 
 
-export function PrintFormat({ fishRecord, dataURL, logoBase64 }: PrintFormatProps) {
+export function PrintFormat({ fishRecord, dataURL }: PrintFormatProps) {
 
   const createdAt = new Date(fishRecord.created_at || "").toLocaleDateString('pt-BR', {
     day: '2-digit',
@@ -48,8 +30,8 @@ export function PrintFormat({ fishRecord, dataURL, logoBase64 }: PrintFormatProp
 
     <!-- Cabeçalho com logo e textos ao lado -->
     <div style="display:flex; align-items:center; justify-content:center; gap:20px; margin-bottom:30px;">
-      <img src="${logoBase64}" alt="Logo FIPe" style="width:30vw; height:auto;">
       <div style="display:flex; flex-direction:column; justify-content:center;">
+        <div style="font-size:10vw; font-weight:bolder; margin-bottom:4px; text-align: center;">42º FIPe</div>
         <div style="font-size:6vw; font-weight:500; margin-bottom:4px;">Comprovante de Pesca</div>
         <div style="font-size:6vw; font-weight:700;">Categoria ${fishRecord.modality}</div>
       </div>

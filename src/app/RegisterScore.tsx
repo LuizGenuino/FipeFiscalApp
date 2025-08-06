@@ -14,7 +14,7 @@ import { ScoreForm } from '@/components/ScoreForm';
 import { RegisterCapture } from '@/components/RegisterCapture';
 import { FishRecord } from '../assets/types';
 import { generateUniqueCode } from '../assets/randomCode';
-import { getBase64Logo, PrintFormat } from '../assets/printFormart';
+import { PrintFormat } from '../assets/printFormart';
 import { AuthService, FishRecordService } from '../services/controller';
 import { useLoading } from '../contexts/LoadingContext';
 import { ModalViewScore } from '../components/ModalViewScore';
@@ -128,7 +128,7 @@ export default function RegisterScore() {
         if (!validateForm()) return;
         setLoading(true)
         console.log("busca localização");
-        
+
         let location = await Location.getCurrentPositionAsync({});
         console.log("localização atual:", location);
         setFishRecord(prev => ({
@@ -145,13 +145,12 @@ export default function RegisterScore() {
 
     const handlePrint = async () => {
         console.log("função print: ", !!qrRef.current);
-        
+
         if (!qrRef.current) return;
 
         try {
             qrRef.current?.toDataURL(async (dataURL) => {
-                const logoBase64 = await getBase64Logo();
-                const html = PrintFormat({ fishRecord, dataURL, logoBase64 });
+                const html = PrintFormat({ fishRecord, dataURL });
                 try {
                     await Print.printAsync({ html });
                     setShowConfirmModal(false);
