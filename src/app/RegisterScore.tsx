@@ -23,6 +23,7 @@ import * as MediaLibrary from 'expo-media-library';
 import * as Print from 'expo-print';
 import * as FileSystem from 'expo-file-system';
 import { getModality } from '../services/storage';
+import { Video } from 'react-native-compressor';
 
 
 
@@ -129,6 +130,14 @@ export default function RegisterScore() {
         setLoading(true)
         console.log("busca localização");
 
+         const newURI = await Video.compress(
+                fishRecord.fish_video,
+                {},
+                (progress) => {
+                    console.log('Compression Progress: ', progress);
+                }
+            );
+
         let location = await Location.getCurrentPositionAsync({});
         console.log("localização atual:", location);
         setFishRecord(prev => ({
@@ -137,6 +146,7 @@ export default function RegisterScore() {
             created_at: new Date().toISOString(),
             latitude: location.coords.latitude,
             longitude: location.coords.longitude,
+            fish_video: newURI
         }));
 
         setShowConfirmModal(true);

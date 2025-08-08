@@ -1,5 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
-import { Camera, useCameraDevice, useCameraPermission, useCodeScanner, useMicrophonePermission } from "react-native-vision-camera";
+import { Camera, useCameraDevice, useCameraFormat, useCameraPermission, useCodeScanner, useMicrophonePermission } from "react-native-vision-camera";
 import {
     useEffect,
     useRef,
@@ -24,6 +24,12 @@ interface CameraComponentProps {
 
 export function CameraView({ type, onMediaCaptured, active, onClose }: CameraComponentProps) {
     const device = useCameraDevice("back");
+    const format = useCameraFormat(device, [
+        { videoAspectRatio: 16 / 9 },
+        { videoResolution: { width: 1280, height: 720 } },
+        { photoResolution: { width: 1280, height: 720 } },
+        { fps: 24 }
+    ])
     const { hasPermission, requestPermission } = useCameraPermission();
     const { hasPermission: hasMicPermission, requestPermission: requestMicPermission } = useMicrophonePermission();
     const [permission, setPermission] = useState<null | boolean>(null)
@@ -141,10 +147,12 @@ export function CameraView({ type, onMediaCaptured, active, onClose }: CameraCom
                     ref={cameraRef}
                     style={styles.camera}
                     device={device}
+                    videoBitRate="extra-low"
+                    format={format}
                     isActive={active}
                     photo={type === "photo" || type === "qrcode"}
                     video={type === "video"}
-                    audio={type === "video"? true : false}
+                    audio={type === "video" ? true : false}
                     resizeMode="cover"
                     codeScanner={type === "qrcode" ? codeScanner : undefined}
                 />

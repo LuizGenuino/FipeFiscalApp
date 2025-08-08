@@ -27,8 +27,10 @@ const MODALITY_TYPES: Modality[] = [
     { category: "Embarcada", modality: "Motorizada", code: "MO-" },
     { category: "Embarcada", modality: "Caiaque", code: "CE-" },
     { category: "Embarcada", modality: "Canoa", code: "CA-" },
-    { category: "Barranco", modality: "Infantil", code: "I1-" },
-    { category: "Barranco", modality: "Juvenil", code: "J1-" },
+    { category: "Barranco", modality: "Infantil 1", code: "I1-" },
+    { category: "Barranco", modality: "Infantil 2", code: "I2-" },
+    { category: "Barranco", modality: "Juvenil 1", code: "J1-" },
+    { category: "Barranco", modality: "Juvenil 2", code: "J2-" },
     { category: "Barranco", modality: "PCD", code: "PC-" },
     { category: "Barranco", modality: "Sênior", code: "SE-" },
 ];
