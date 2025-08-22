@@ -21,9 +21,11 @@ interface ModalConfirmScoreProps {
     setShowModal: (visible: boolean) => void;
     fishRecord: FishRecord;
     handleConfirmSubmit: (item?: any) => void;
+    handleButtonPrimary?: (item?: any) => void;
     qrRef: any,
     textButtonClose?: string;
     textButtonConfirm?: string;
+    textButtonPrimary?: string;
 }
 
 export function ModalViewScore({
@@ -31,9 +33,11 @@ export function ModalViewScore({
     setShowModal,
     fishRecord,
     handleConfirmSubmit,
+    handleButtonPrimary,
     qrRef,
     textButtonClose = "Fechar",
     textButtonConfirm = "Sincronizar",
+    textButtonPrimary = undefined
 }: ModalConfirmScoreProps) {
     const renderMediaSection = (
         label: string,
@@ -168,6 +172,17 @@ export function ModalViewScore({
                                 {renderMediaSection("Vídeo de Soltura", fishRecord.fish_video, true)}
                                 {renderMediaSection("Foto da Ficha", fishRecord.card_image)}
                             </View>
+
+                            {textButtonPrimary && handleButtonPrimary && (
+                                <View style={styles.modalSection}>
+                                    <TouchableOpacity
+                                        style={styles.modalButtonPrimary}
+                                        onPress={() => handleButtonPrimary(fishRecord)}
+                                    >
+                                        <Text style={styles.modalButtonPrimaryText}>{textButtonPrimary}</Text>
+                                    </TouchableOpacity>
+                                </View>
+                            )}
 
                             <View style={styles.modalButtons}>
                                 <TouchableOpacity

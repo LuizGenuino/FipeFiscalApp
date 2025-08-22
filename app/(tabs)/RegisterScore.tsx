@@ -126,18 +126,16 @@ export default function RegisterScore() {
         return true;
     };
 
-    const handleSubmit = async () => {
-        if (!validateForm()) return;
-        setLoading(true)
-        console.log("busca localização");
+    const getGeoLocation = async () => {
+        // const newURI = await Video.compress(
+        //     fishRecord.fish_video,
+        //     {},
+        //     (progress) => {
+        //         console.log('Compression Progress: ', progress);
+        //     }
+        // );
 
-        const newURI = await Video.compress(
-            fishRecord.fish_video,
-            {},
-            (progress) => {
-                console.log('Compression Progress: ', progress);
-            }
-        );
+        const newURI = fishRecord.fish_video
 
         let location = await Location.getCurrentPositionAsync({});
         console.log("localização atual:", location);
@@ -149,6 +147,14 @@ export default function RegisterScore() {
             longitude: location.coords.longitude,
             fish_video: newURI
         }));
+    }
+
+    const handleSubmit = async () => {
+        if (!validateForm()) return;
+        setLoading(true)
+        console.log("busca localização");
+
+        await getGeoLocation()
 
         setShowConfirmModal(true);
         setLoading(false)

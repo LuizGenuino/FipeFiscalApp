@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
     View,
     Text,
@@ -19,9 +19,16 @@ import { storeLastSync } from '@/services/storage';
 import { ModalViewScore } from '@/components/ModalViewScore';
 import { COLORS } from '@/constants/Colors';
 import { recordListStyles } from "../../assets/styles/recordList.styles";
+import { PrintFormat } from '@/assets/printFormart';
+import * as Print from 'expo-print';
 
+
+type QRCodeRef = {
+    toDataURL: (callback: (dataURL: string) => void) => void;
+}
 
 export default function RecordFishList() {
+    const qrRef = useRef<QRCodeRef | null>(null);
     const router = useRouter();
     const fishRecordService = new FishRecordService()
     const [fishRecordList, setFishRecordList] = useState<FishRecord[]>()
@@ -126,6 +133,28 @@ export default function RecordFishList() {
         setLoading(false)
     }
 
+    const print = async (item: FishRecord) => {
+        console.log("função print: ", !!qrRef.current);
+        
+                if (!qrRef.current) return;
+        
+                try {
+                    qrRef.current?.toDataURL(async (dataURL) => {
+                        const html = PrintFormat({ fishRecord: item, dataURL });
+                        try {
+                            await Print.printAsync({ html });
+                        } catch (err) {
+                            console.error("Erro ao imprimir:", err);
+                        }
+                    });
+                } catch (error) {
+                    console.error("Error generating QR code data URL:", error);
+                    Alert.alert('Erro', 'Falha ao gerar o QR Code');
+                    return;
+        
+                }
+        
+    }
 
     return (
         <View style={recordListStyles.container}>
@@ -133,71 +162,73 @@ export default function RecordFishList() {
                 showsVerticalScrollIndicator={false}
                 contentContainerStyle={recordListStyles.scrollContent}
             >
-                {fishRecord && <ModalViewScore fishRecord={fishRecord} setShowModal={setShowModal} showModal={showModal} handleConfirmSubmit={synchronizeFishRecord} qrRef={""} />}
-                <View style={styles.header}>
+                {fishRecord && <ModalViewScore fishRecord={fishRecord} setShowModal={setShowModal} showModal={showModal} 
+                                                handleConfirmSubmit={synchronizeFishRecord} qrRef={qrRef}
+                                                textButtonPrimary='Imprimir Comprovante' handleButtonPrimary={print}/>}
+                <View style={recordListStyles.header}>
                     <Ionicons name="browsers" size={60} color="#FB4803" />
-                    <Text style={styles.title}>Lista de Pontuação</Text>
-                    <Text style={styles.subtitle}>Historico dos Registros de Pontuações</Text>
+                    <Text style={recordListStyles.title}>Lista de Pontuação</Text>
+                    <Text style={recordListStyles.subtitle}>Historico dos Registros de Pontuações</Text>
                 </View>
                 {fishRecordList?.length ? (
-                    <SafeAreaView style={styles.container}>
+                    <SafeAreaView style={recordListStyles.container}>
                         <ScrollView
-                            contentContainerStyle={styles.scrollContent}
+                            contentContainerStyle={recordListStyles.scrollContent}
 
                         >
-                            <View style={styles.cardList}>
+                            <View style={recordListStyles.cardList}>
                                 {fishRecordList.map((item: FishRecord) => {
                                     return (
-                                        <TouchableOpacity style={styles.cardItem} key={item.code} onPress={() => handleModal(item)} >
-                                            <View style={styles.row} >
-                                                <Text style={styles.cardText}>ID:</Text>
-                                                <Text style={[styles.cardText, { fontWeight: "bold" }]}>{item.code}</Text>
+                                        <TouchableOpacity style={recordListStyles.cardItem} key={item.code} onPress={() => handleModal(item)} >
+                                            <View style={recordListStyles.row} >
+                                                <Text style={recordListStyles.cardText}>ID:</Text>
+                                                <Text style={[recordListStyles.cardText, { fontWeight: "bold" }]}>{item.code}</Text>
                                             </View>
-                                            <View style={styles.row} >
-                                                <Text style={styles.cardText}>Sincronizado:</Text>
-                                                <Text style={[styles.cardText, { fontWeight: "bold", color: item.synchronized ? "green" : "red" }]}>{item.synchronized ? "Sim" : "Não"}</Text>
+                                            <View style={recordListStyles.row} >
+                                                <Text style={recordListStyles.cardText}>Sincronizado:</Text>
+                                                <Text style={[recordListStyles.cardText, { fontWeight: "bold", color: item.synchronized ? "green" : "red" }]}>{item.synchronized ? "Sim" : "Não"}</Text>
                                             </View>
-                                            <View style={styles.row} >
-                                                <Text style={styles.cardText}>Código do Time:</Text>
-                                                <Text style={[styles.cardText, { fontWeight: "bold" }]}>{item.team}</Text>
+                                            <View style={recordListStyles.row} >
+                                                <Text style={recordListStyles.cardText}>Código do Time:</Text>
+                                                <Text style={[recordListStyles.cardText, { fontWeight: "bold" }]}>{item.team}</Text>
                                             </View>
-                                            <View style={styles.row} >
-                                                <Text style={styles.cardText}>Nº Ficha:</Text>
-                                                <Text style={[styles.cardText, { fontWeight: "bold" }]}>{item.card_number}</Text>
+                                            <View style={recordListStyles.row} >
+                                                <Text style={recordListStyles.cardText}>Nº Ficha:</Text>
+                                                <Text style={[recordListStyles.cardText, { fontWeight: "bold" }]}>{item.card_number}</Text>
                                             </View>
-                                            <View style={styles.row} >
-                                                <Text style={styles.cardText}>Espécie: </Text>
-                                                <Text style={[styles.cardText, { fontWeight: "bold" }]}>{item.species_id}</Text>
+                                            <View style={recordListStyles.row} >
+                                                <Text style={recordListStyles.cardText}>Espécie: </Text>
+                                                <Text style={[recordListStyles.cardText, { fontWeight: "bold" }]}>{item.species_id}</Text>
                                             </View>
-                                            <View style={styles.row} >
-                                                <Text style={styles.cardText}>Tamanho:</Text>
-                                                <Text style={[styles.cardText, { fontWeight: "bold" }]}>{item.size} Cm</Text>
+                                            <View style={recordListStyles.row} >
+                                                <Text style={recordListStyles.cardText}>Tamanho:</Text>
+                                                <Text style={[recordListStyles.cardText, { fontWeight: "bold" }]}>{item.size} Cm</Text>
                                             </View>
-                                            <View style={styles.row} >
-                                                <Text style={styles.cardText}>Pontuação:</Text>
-                                                <Text style={[styles.cardText, { fontWeight: "bold" }]}>{item.total_points} Pts</Text>
+                                            <View style={recordListStyles.row} >
+                                                <Text style={recordListStyles.cardText}>Pontuação:</Text>
+                                                <Text style={[recordListStyles.cardText, { fontWeight: "bold" }]}>{item.total_points} Pts</Text>
                                             </View>
-                                            <View style={styles.row}>
-                                                <Text style={styles.cardText}>
+                                            <View style={recordListStyles.row}>
+                                                <Text style={recordListStyles.cardText}>
                                                     Foto da Ficha:
                                                 </Text>
-                                                <Text style={styles.cardText}>
+                                                <Text style={recordListStyles.cardText}>
                                                     {item.card_image ? '✓' : 'x'}
                                                 </Text>
                                             </View>
-                                            <View style={styles.row}>
-                                                <Text style={styles.cardText}>
+                                            <View style={recordListStyles.row}>
+                                                <Text style={recordListStyles.cardText}>
                                                     Foto do Peixe:
                                                 </Text>
-                                                <Text style={styles.cardText}>
+                                                <Text style={recordListStyles.cardText}>
                                                     {item.fish_image ? '✓' : 'x'}
                                                 </Text>
                                             </View>
-                                            <View style={styles.row}>
-                                                <Text style={styles.cardText}>
+                                            <View style={recordListStyles.row}>
+                                                <Text style={recordListStyles.cardText}>
                                                     Vídeo da soltura:
                                                 </Text>
-                                                <Text style={styles.cardText}>
+                                                <Text style={recordListStyles.cardText}>
                                                     {item.fish_video ? '✓' : 'x'}
                                                 </Text>
                                             </View>
@@ -205,71 +236,17 @@ export default function RecordFishList() {
                                     )
                                 })}
                                 <TouchableOpacity
-                                    style={styles.modalButtonPrimary}
+                                    style={recordListStyles.modalButtonPrimary}
                                     onPress={synchronizeAllFishRecord}
                                 >
-                                    <Text style={styles.modalButtonPrimaryText}>Sincronizar Tudo</Text>
+                                    <Text style={recordListStyles.modalButtonPrimaryText}>Sincronizar Tudo</Text>
                                 </TouchableOpacity>
                             </View>
                         </ScrollView>
                     </SafeAreaView>
-                ) : <Text style={[styles.subtitle, { marginTop: 60 }]} >Nenhum Registro Salvo ainda...</Text>}
+                ) : <Text style={[recordListStyles.subtitle, { marginTop: 60 }]} >Nenhum Registro Salvo ainda...</Text>}
 
             </ScrollView>
         </View>
     );
 }
-
-const styles = StyleSheet.create({
-    container: { flex: 1, backgroundColor: '#FFE4C0' },
-    scrollContent: { flexGrow: 1, justifyContent: 'center', alignItems: "center" },
-    header: { alignItems: 'center' },
-    title: { fontSize: 26, fontWeight: 'bold', color: '#FB4803', marginTop: 12 },
-    subtitle: { fontSize: 16, color: '#475569', marginTop: 8, textAlign: 'center' },
-    cardList: {
-        maxWidth: 450,
-        padding: 5,
-        width: "90%"
-    },
-    cardItem: {
-        width: "100%",
-        padding: 10,
-        margin: 5,
-        elevation: 2,
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 4,
-        borderRadius: 15,
-        backgroundColor: "#fff",
-        flexDirection: "row",
-        justifyContent: "space-between",
-        flexWrap: "wrap"
-    },
-
-    cardText: {
-        fontSize: 14,
-        color: '#4b5563',
-        marginBottom: 4,
-    },
-    row: {
-        flexDirection: "row",
-        justifyContent: "space-between",
-        width: "45%",
-        marginBottom: 5
-    },
-
-    modalButtonPrimary: {
-        backgroundColor: '#FB4803',
-        borderRadius: 8,
-        padding: 12,
-        marginTop: 10
-    },
-    modalButtonPrimaryText: {
-        color: '#fff',
-        fontSize: 16,
-        fontWeight: 'bold',
-        textAlign: 'center',
-    },
-
-});
