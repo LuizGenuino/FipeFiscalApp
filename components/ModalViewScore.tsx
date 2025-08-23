@@ -26,6 +26,7 @@ interface ModalConfirmScoreProps {
     textButtonClose?: string;
     textButtonConfirm?: string;
     textButtonPrimary?: string;
+    hideMedia?: boolean;
 }
 
 export function ModalViewScore({
@@ -37,7 +38,8 @@ export function ModalViewScore({
     qrRef,
     textButtonClose = "Fechar",
     textButtonConfirm = "Sincronizar",
-    textButtonPrimary = undefined
+    textButtonPrimary = undefined,
+    hideMedia = false
 }: ModalConfirmScoreProps) {
     const renderMediaSection = (
         label: string,
@@ -167,11 +169,11 @@ export function ModalViewScore({
                                 </View>
                             </View>
 
-                            <View style={styles.modalSection}>
-                                {renderMediaSection("Foto do Peixe", fishRecord.fish_image)}
-                                {renderMediaSection("Vídeo de Soltura", fishRecord.fish_video, true)}
-                                {renderMediaSection("Foto da Ficha", fishRecord.card_image)}
-                            </View>
+                        {!hideMedia && (<View style={styles.modalSection}>
+                            {renderMediaSection("Foto do Peixe", fishRecord.fish_image)}
+                            {renderMediaSection("Vídeo de Soltura", fishRecord.fish_video, true)}
+                            {renderMediaSection("Foto da Ficha", fishRecord.card_image)}
+                        </View>)}
 
                             {textButtonPrimary && handleButtonPrimary && (
                                 <View style={styles.modalSection}>

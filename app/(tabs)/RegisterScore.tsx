@@ -283,6 +283,7 @@ export default function RegisterScore() {
                     qrRef={qrRef}
                     textButtonClose="Corrigir"
                     textButtonConfirm="Registrar e Imprimir"
+                    hideMedia={true}
                 />
             </ScrollView>
         </View>

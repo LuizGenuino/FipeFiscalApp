@@ -1,20 +1,24 @@
-import { FishRecord } from '@/assets/types';
+import { FishRecord } from '@assets/types';
 import * as SQLite from 'expo-sqlite';
 
 class OfflineStorage {
+  private static instance: OfflineStorage;
   private db: SQLite.SQLiteDatabase | null = null;
 
-  constructor() {
-    this.init();
+  private constructor() {}
+
+  static async getInstance() {
+    if (!OfflineStorage.instance) {
+      OfflineStorage.instance = new OfflineStorage();
+      await OfflineStorage.instance.init();
+    }
+    return OfflineStorage.instance;
   }
 
-  // Inicializa e configura o banco
-  async init() {
-    this.db = await SQLite.openDatabaseAsync('FipeFiscalApp');
+  private async init() {
+    this.db = await SQLite.openDatabaseAsync('FipeFiscalApp.db');
     await this.db.execAsync(`PRAGMA journal_mode = WAL;`);
 
-    // Criação das tabelas
-     // await this.db.execAsync('DROP TABLE IF EXISTS fish_catch')
     await this.db.execAsync(`
       CREATE TABLE IF NOT EXISTS fish_catch (
         code TEXT PRIMARY KEY NOT NULL,
@@ -37,22 +41,19 @@ class OfflineStorage {
     `);
   }
 
-  // Garante que o banco foi inicializado
   private getDb() {
     if (!this.db) throw new Error('Banco de dados ainda não foi inicializado');
     return this.db;
   }
 
-  // Armazena pontuação offline
   async setFishRecord(data: FishRecord) {
     const db = this.getDb();
-    
     await db.runAsync(
       `INSERT INTO fish_catch (
-                code, team, category, modality, registered_by, species_id,
-                size, total_points, card_number, card_image,
-                fish_image, fish_video,latitude, longitude,  synchronized, created_at
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        code, team, category, modality, registered_by, species_id,
+        size, total_points, card_number, card_image,
+        fish_image, fish_video, latitude, longitude, synchronized, created_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         data.code,
         data.team,
@@ -72,10 +73,8 @@ class OfflineStorage {
         data.created_at || new Date().toISOString()
       ]
     );
-
   }
 
-  // Recupera todas as equipes
   async getAllFishRecord() {
     const db = this.getDb();
     return await db.getAllAsync('SELECT * FROM fish_catch');
@@ -83,20 +82,18 @@ class OfflineStorage {
 
   async getFishRecordByQuery(query: string, parameter: string) {
     const db = this.getDb();
-    return await db.getAllAsync(`SELECT * FROM teams WHERE ${query} = ?`, [parameter]);
+    return await db.getAllAsync(`SELECT * FROM fish_catch WHERE ${query} = ?`, [parameter]);
   }
 
-  // editar pontuação por código
   async updateFishRecord(data: FishRecord) {
-    
     const db = this.getDb();
     await db.runAsync(
       `UPDATE fish_catch SET
-                team = ?, category = ?, modality = ?, registered_by = ?,
-                species_id = ?, size = ?, total_points = ?, card_number = ?,
-                card_image = ?, fish_image = ?, fish_video = ?,
-                latitude = ?, longitude = ?, synchronized = ?, created_at = ?
-            WHERE code = ?`,
+        team = ?, category = ?, modality = ?, registered_by = ?,
+        species_id = ?, size = ?, total_points = ?, card_number = ?,
+        card_image = ?, fish_image = ?, fish_video = ?,
+        latitude = ?, longitude = ?, synchronized = ?
+      WHERE code = ?`,
       [
         data.team,
         data.category,
@@ -112,17 +109,14 @@ class OfflineStorage {
         data.latitude || 0,
         data.longitude || 0,
         data.synchronized ? 1 : 0,
-        data.created_at || new Date().toISOString(),
         data.code
       ]
     );
   }
 
-  // apaga banco de dados
   async clearDatabase() {
     const db = this.getDb();
-    await db.execAsync('DROP TABLE IF EXISTS fish_catch');
-    await this.init(); // Recria as tabelas após limpar
+    await db.execAsync('DELETE FROM fish_catch'); // mais seguro que DROP
   }
 }
 
