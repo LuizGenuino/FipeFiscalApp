@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
     View,
     Text,
@@ -8,7 +8,7 @@ import {
     ScrollView,
     SafeAreaView,
 } from 'react-native';
-import { useRouter, useLocalSearchParams } from 'expo-router';
+import { useRouter, useLocalSearchParams, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { ScoreForm } from '@/components/ScoreForm';
 import { RegisterCapture } from '@/components/RegisterCapture';
@@ -57,9 +57,47 @@ export default function RegisterScore() {
         fish_video: '',
         latitude: 0,
         longitude: 0,
-        synchronized: false
+        synchronizedData: false,
+        synchronizedMedia: false
     });
     const [showConfirmModal, setShowConfirmModal] = useState(false);
+    const isMounted = useRef(true);
+
+    useFocusEffect(
+        useCallback(() => {
+            isMounted.current = true;
+            if (!teamCode || typeof teamCode !== 'string' || teamCode.length < 5) {
+                Alert.alert('Erro', 'Parâmetro do time não encontrado');
+                router.back();
+                return;
+            }
+            setFishRecord(prev => ({ ...prev, team: teamCode }));
+
+            getInspectorName();
+
+            return () => {
+                isMounted.current = false;
+                setFishRecord({
+                    code: "",
+                    team: '',
+                    category: "",
+                    modality: "",
+                    registered_by: "",
+                    species_id: "",
+                    size: 0,
+                    total_points: 0,
+                    card_number: '',
+                    card_image: '',
+                    fish_image: '',
+                    fish_video: '',
+                    latitude: 0,
+                    longitude: 0,
+                    synchronizedData: false,
+                    synchronizedMedia: false
+                });
+            };
+        }, [])
+    );
 
 
     useEffect(() => {
@@ -74,17 +112,6 @@ export default function RegisterScore() {
             }
         })();
     }, []);
-
-    useEffect(() => {
-        if (!teamCode || typeof teamCode !== 'string' || teamCode.length < 5) {
-            Alert.alert('Erro', 'Parâmetro do time não encontrado');
-            router.back();
-            return;
-        }
-        setFishRecord(prev => ({ ...prev, team: teamCode }));
-
-        getInspectorName();
-    }, [teamCode]);
 
     const getInspectorName = async () => {
         const response = await new AuthService().getUser();

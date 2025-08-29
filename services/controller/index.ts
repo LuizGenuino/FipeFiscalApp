@@ -6,19 +6,71 @@ import {
     LoginData,
 } from "@/assets/types";
 import { ApiService } from "../api";
-import { clearUser, getUser, storeUser } from "../storage";
-import OfflineStorage from "../sql";
+import { clearUser, getUser, storeLastSync, storeUser } from "../storage";
 import NetInfo from '@react-native-community/netinfo';
+import OfflineStorage from "../sql";
 
+// Remove a instanciação direta - usaremos getInstance() assincrono
+let offlineStorage: OfflineStorage | null = null;
 
-const offlineStorage = new OfflineStorage();
+async function getOfflineStorage(): Promise<OfflineStorage> {
+    if (!offlineStorage) {
+        offlineStorage = await OfflineStorage.getInstance();
+    }
+    return offlineStorage;
+}
 
 async function isOnline(): Promise<boolean> {
     const state = await NetInfo.fetch();
     return !!(state.isConnected && state.isInternetReachable);
 }
 
+// Serviço para sincronização em background
+class SyncService {
+    private isSyncing = false;
 
+    async trySyncPendingRecords() {
+        if (this.isSyncing) return;
+
+        this.isSyncing = true;
+        try {
+            const storage = await getOfflineStorage();
+            const pendingRecords = await storage.getUnsynchronizedRecords();
+
+            if (pendingRecords.length === 0) {
+                await storeLastSync();
+                return;
+            }
+
+            const online = await isOnline();
+            if (!online) {
+                return;
+            }
+
+            const apiService = new ApiService('/fish_catch');
+
+            for (const record of pendingRecords) {
+                try {
+                    const response: any = await apiService.post(record);
+
+                    if (response.status === 200 || response.status === 201) {
+                        await storage.markAsSynchronizedData(record.code);
+                        console.log(`Registro ${record.code} sincronizado com sucesso`);
+                    }
+                } catch (error) {
+                    console.error(`Erro ao sincronizar registro ${record.code}:`, error);
+                    // Continua com os próximos registros mesmo se um falhar
+                }
+            }
+        } catch (error) {
+            console.error('Erro no processo de sincronização:', error);
+        } finally {
+            this.isSyncing = false;
+        }
+    }
+}
+
+const syncService = new SyncService();
 
 export class AuthService {
     async Login(data: LoginData): Promise<ControllerResponse> {
@@ -86,26 +138,41 @@ export class AuthService {
 }
 
 export class FishRecordService {
+    private async getStorage(): Promise<OfflineStorage> {
+        return await getOfflineStorage();
+    }
+
     async setFishRecord(data: FishRecord): Promise<ControllerResponse> {
-        data.size = +data.size
+        data.size = +data.size;
+
         try {
-            await offlineStorage.setFishRecord(data)
-            // if ((await isOnline())) {
-            //     const apiService = new ApiService('/fish_catch');
-            //     const response: any = await apiService.post(data);
-            //     console.log("response api: ", response);
-            //     if (response.status === 200 || response.status === 201) {
-            //         data.synchronized = true
-            //         await offlineStorage.updateFishRecord(data)
-            //     } 
-            // }
+            const storage = await this.getStorage();
+
+            // Salva localmente primeiro
+            await storage.setFishRecord(data);
+
+            // Tenta sincronizar imediatamente se online
+            const online = await isOnline();
+            if (online) {
+                try {
+                    const apiService = new ApiService('/fish_catch');
+                    const response: any = await apiService.post(data);
+
+                    if (response.status === 200 || response.status === 201) {
+                        await storage.markAsSynchronizedData(data.code);
+                        console.log("Registro sincronizado imediatamente");
+                    }
+                } catch (apiError) {
+                    console.warn('Falha na sincronização imediata, mantendo como pendente:', apiError);
+                    // Não lança erro - o registro ficará pendente para sincronização posterior
+                }
+            }
 
             return {
                 success: true,
                 message: "Pontuação Cadastrada Com Sucesso",
                 data: null
-            }
-
+            };
 
         } catch (error: any) {
             console.error('Erro ao Salvar Pontuação da Equipe:', error);
@@ -118,36 +185,43 @@ export class FishRecordService {
     }
 
     async synchronizeFishRecord(data: FishRecord): Promise<ControllerResponse> {
-        data.size = +data.size
-        try {
-            // if ((await isOnline())) {
-            //     const apiService = new ApiService('/fish_catch');
-            //     const response: any = await apiService.post(data);
-            //     console.log("response api: ", response);
-            //     if (response.status === 200 || response.status === 201) {
-            //         data.synchronized = true
-            //         await offlineStorage.updateFishRecord(data)
-            //     }
-            // } else {
-            //     return {
-            //         success: false,
-            //         message: "Sem Acesso a Internet!",
-            //         data: null
-            //     }
-            // }
+        data.size = +data.size;
 
-            return {
-                success: true,
-                message: "Pontuação Sincronizada Com Sucesso",
-                data: null
+        try {
+            const online = await isOnline();
+            if (!online) {
+                return {
+                    success: false,
+                    message: "Sem Acesso a Internet!",
+                    data: null
+                };
             }
 
+            const storage = await this.getStorage();
+            const apiService = new ApiService('/fish_catch');
+            const response: any = await apiService.post(data);
+
+            if (response.status === 200 || response.status === 201) {
+                await storage.markAsSynchronizedData(data.code);
+
+                return {
+                    success: true,
+                    message: "Pontuação Sincronizada Com Sucesso",
+                    data: null
+                };
+            } else {
+                return {
+                    success: false,
+                    message: "Erro na resposta da API",
+                    data: null
+                };
+            }
 
         } catch (error: any) {
-            console.error('Erro ao Salvar Pontuação da Equipe:', error);
+            console.error('Erro ao Sincronizar Pontuação:', error);
             return {
                 success: false,
-                message: error?.message || 'Erro ao Salvar Pontuação da Equipe',
+                message: error?.message || 'Erro ao Sincronizar Pontuação',
                 data: null,
             };
         }
@@ -155,12 +229,13 @@ export class FishRecordService {
 
     async getAllFishRecord(): Promise<ControllerResponse> {
         try {
+            const storage = await this.getStorage();
+            const fishRecords = await storage.getAllFishRecords();
 
-            const FishRecord = await offlineStorage.getAllFishRecord();
             return {
                 success: true,
                 message: "Pontuações obtidas com Sucesso!",
-                data: FishRecord,
+                data: fishRecords,
             };
 
         } catch (error: any) {
@@ -170,9 +245,57 @@ export class FishRecordService {
                 message: error?.message || 'Erro ao obter as pontuações',
                 data: null,
             };
-
         }
     }
 
+    async getPendingSyncRecords(): Promise<ControllerResponse> {
+        try {
+            const storage = await this.getStorage();
+            const pendingRecords = await storage.getUnsynchronizedRecords();
+
+            return {
+                success: true,
+                message: "Registros pendentes obtidos com sucesso",
+                data: pendingRecords,
+            };
+
+        } catch (error: any) {
+            console.error('Erro ao buscar registros pendentes:', error);
+            return {
+                success: false,
+                message: error?.message || 'Erro ao obter registros pendentes',
+                data: null,
+            };
+        }
+    }
+
+    async trySyncAllPending(): Promise<ControllerResponse> {
+        try {
+            await syncService.trySyncPendingRecords();
+
+            return {
+                success: true,
+                message: "Sincronização iniciada",
+                data: null,
+            };
+
+        } catch (error: any) {
+            console.error('Erro ao iniciar sincronização:', error);
+            return {
+                success: false,
+                message: error?.message || 'Erro ao iniciar sincronização',
+                data: null,
+            };
+        }
+    }
 }
 
+// Listeners para sincronização automática quando a conexão voltar
+NetInfo.addEventListener(state => {
+    if (state.isConnected && state.isInternetReachable) {
+        setTimeout(() => syncService.trySyncPendingRecords(), 3000);
+    }
+});
+
+// Sincronização periódica a cada 5 minutos
+setInterval(() => syncService.trySyncPendingRecords(), 5 * 60 * 1000);

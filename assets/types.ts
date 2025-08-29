@@ -21,7 +21,8 @@ export type FishRecord = {
     fish_video: string;
     latitude?: number;
     longitude?: number;
-    synchronized?: boolean;
+    synchronizedData?: boolean;
+    synchronizedMedia?: boolean
     created_at?: string;
 }
 
