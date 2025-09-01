@@ -35,7 +35,7 @@ class SyncService {
         this.isSyncing = true;
         try {
             const storage = await getOfflineStorage();
-            const pendingRecords = await storage.getUnsynchronizedRecords();
+            const pendingRecords = await storage.getUnsynchronizedDataRecords();
 
             if (pendingRecords.length === 0) {
                 await storeLastSync();
@@ -47,11 +47,15 @@ class SyncService {
                 return;
             }
 
-            const apiService = new ApiService('/fish_catch');
 
             for (const record of pendingRecords) {
                 try {
-                    const response: any = await apiService.post(record);
+                    let response: any
+                    if (record.modality === 'Barranco') {
+                        response = await ApiService.barranco.enviarDados('fish_catch', record)
+                    } else {
+                        response = await ApiService.embarcada.enviarDados('fish_catch', record)
+                    }
 
                     if (response.status === 200 || response.status === 201) {
                         await storage.markAsSynchronizedData(record.code);
@@ -155,8 +159,12 @@ export class FishRecordService {
             const online = await isOnline();
             if (online) {
                 try {
-                    const apiService = new ApiService('/fish_catch');
-                    const response: any = await apiService.post(data);
+                    let response: any
+                    if (data.modality === 'Barranco') {
+                        response = await ApiService.barranco.enviarDados('fish_catch', data)
+                    } else {
+                        response = await ApiService.embarcada.enviarDados('fish_catch', data)
+                    }
 
                     if (response.status === 200 || response.status === 201) {
                         await storage.markAsSynchronizedData(data.code);
@@ -198,8 +206,12 @@ export class FishRecordService {
             }
 
             const storage = await this.getStorage();
-            const apiService = new ApiService('/fish_catch');
-            const response: any = await apiService.post(data);
+            let response: any
+            if (data.modality === 'Barranco') {
+                response = await ApiService.barranco.enviarDados('fish_catch', data)
+            } else {
+                response = await ApiService.embarcada.enviarDados('fish_catch', data)
+            }
 
             if (response.status === 200 || response.status === 201) {
                 await storage.markAsSynchronizedData(data.code);
@@ -251,7 +263,7 @@ export class FishRecordService {
     async getPendingSyncRecords(): Promise<ControllerResponse> {
         try {
             const storage = await this.getStorage();
-            const pendingRecords = await storage.getUnsynchronizedRecords();
+            const pendingRecords = await storage.getUnsynchronizedDataRecords();
 
             return {
                 success: true,
@@ -290,12 +302,5 @@ export class FishRecordService {
     }
 }
 
-// Listeners para sincronização automática quando a conexão voltar
-NetInfo.addEventListener(state => {
-    if (state.isConnected && state.isInternetReachable) {
-        setTimeout(() => syncService.trySyncPendingRecords(), 3000);
-    }
-});
-
 // Sincronização periódica a cada 5 minutos
-setInterval(() => syncService.trySyncPendingRecords(), 5 * 60 * 1000);
+setInterval(() => syncService.trySyncPendingRecords(), 10 * 60 * 1000);

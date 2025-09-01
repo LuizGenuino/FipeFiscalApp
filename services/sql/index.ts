@@ -119,16 +119,32 @@ class OfflineStorage {
         }
     }
 
-    async getUnsynchronizedRecords(): Promise<FishRecord[]> {
+    async getUnsynchronizedDataRecords(): Promise<FishRecord[]> {
         try {
             const db = this.getDb();
+
             const records = await db.getAllAsync(
-                'SELECT * FROM fish_catch WHERE synchronized = ?',
+                'SELECT * FROM fish_catch WHERE synchronizedData = ?',
                 [0]
             );
             return records as FishRecord[];
         } catch (error) {
-            console.error('Erro ao buscar registros não sincronizados:', error);
+            console.error('Erro ao buscar registros com dados não sincronizados:', error);
+            throw error;
+        }
+    }
+
+    async getUnsynchronizedMediaRecords(): Promise<FishRecord[]> {
+        try {
+            const db = this.getDb();
+
+            const records = await db.getAllAsync(
+                'SELECT * FROM fish_catch WHERE synchronizedMedia = ?',
+                [0]
+            );
+            return records as FishRecord[];
+        } catch (error) {
+            console.error('Erro ao buscar registros com midias não sincronizadas:', error);
             throw error;
         }
     }
