@@ -139,8 +139,8 @@ class OfflineStorage {
             const db = this.getDb();
 
             const records = await db.getAllAsync(
-                'SELECT * FROM fish_catch WHERE synchronizedMedia = ?',
-                [0]
+                'SELECT * FROM fish_catch WHERE synchronizedMedia = ? AND synchronizedData = ?',
+                [0, 1]
             );
             return records as FishRecord[];
         } catch (error) {

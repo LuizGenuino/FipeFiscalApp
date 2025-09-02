@@ -22,10 +22,12 @@ interface ModalConfirmScoreProps {
     fishRecord: FishRecord;
     handleConfirmSubmit: (item?: any) => void;
     handleButtonPrimary?: (item?: any) => void;
+    handleButtonSecundary?: (item?: any) => void;
     qrRef: any,
     textButtonClose?: string;
     textButtonConfirm?: string;
     textButtonPrimary?: string;
+    textButtonSecundary?: string;
     hideMedia?: boolean;
 }
 
@@ -35,10 +37,12 @@ export function ModalViewScore({
     fishRecord,
     handleConfirmSubmit,
     handleButtonPrimary,
+    handleButtonSecundary,
     qrRef,
     textButtonClose = "Fechar",
-    textButtonConfirm = "Sincronizar",
+    textButtonConfirm = "Sincronizar Dados",
     textButtonPrimary = undefined,
+    textButtonSecundary = undefined,
     hideMedia = false
 }: ModalConfirmScoreProps) {
     const renderMediaSection = (
@@ -182,6 +186,17 @@ export function ModalViewScore({
                                         onPress={() => handleButtonPrimary(fishRecord)}
                                     >
                                         <Text style={styles.modalButtonPrimaryText}>{textButtonPrimary}</Text>
+                                    </TouchableOpacity>
+                                </View>
+                            )}
+
+                             {textButtonSecundary && handleButtonSecundary && (
+                                <View style={styles.modalSection}>
+                                    <TouchableOpacity
+                                        style={styles.modalButtonSecondary}
+                                        onPress={() => handleButtonSecundary(fishRecord)}
+                                    >
+                                        <Text style={styles.modalButtonSecondaryText}>{textButtonSecundary}</Text>
                                     </TouchableOpacity>
                                 </View>
                             )}

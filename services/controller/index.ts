@@ -20,6 +20,7 @@ async function getOfflineStorage(): Promise<OfflineStorage> {
     return offlineStorage;
 }
 
+
 async function isOnline(): Promise<boolean> {
     const state = await NetInfo.fetch();
     return !!(state.isConnected && state.isInternetReachable);
@@ -66,8 +67,53 @@ class SyncService {
                     // Continua com os próximos registros mesmo se um falhar
                 }
             }
+            await storeLastSync();
         } catch (error) {
             console.error('Erro no processo de sincronização:', error);
+        } finally {
+            this.isSyncing = false;
+        }
+    }
+
+    async trySyncPendingMedias() {
+        if (this.isSyncing) return;
+
+        this.isSyncing = true;
+        try {
+            const storage = await getOfflineStorage();
+            const pendingRecords = await storage.getUnsynchronizedMediaRecords();
+
+            if (pendingRecords.length === 0) {
+                return;
+            }
+
+            const online = await isOnline();
+            if (!online) {
+                return;
+            }
+
+
+            for (const record of pendingRecords) {
+                try {
+                    let response: any
+                    if (record.modality === 'Barranco') {
+                        response = await ApiService.barranco.enviarMidias(record)
+                    } else {
+                        response = await ApiService.embarcada.enviarMidias(record)
+                    }
+
+                    if (response.status === 200 || response.status === 201) {
+                        await storage.markAsSynchronizedMedia(record.code);
+                        console.log(`Midia do registro ${record.code} sincronizado com sucesso`);
+                    }
+                } catch (error) {
+                    console.error(`Erro ao sincronizar midia do registro ${record.code}:`, error);
+                    // Continua com os próximos registros mesmo se um falhar
+                }
+            }
+            await storeLastSync();
+        } catch (error) {
+            console.error('Erro no processo de sincronização de midia:', error);
         } finally {
             this.isSyncing = false;
         }
@@ -218,6 +264,51 @@ export class FishRecordService {
         }
     }
 
+    async synchronizeFishRecordMedia(data: FishRecord): Promise<ControllerResponse> {
+        try {
+            const online = await isOnline();
+            if (!online) {
+                return {
+                    success: false,
+                    message: "Sem Acesso a Internet!",
+                    data: null
+                };
+            }
+
+            const storage = await this.getStorage();
+            let response: any
+            if (data.modality === 'Barranco') {
+                response = await ApiService.barranco.enviarMidias(data)
+            } else {
+                response = await ApiService.embarcada.enviarMidias(data)
+            }
+
+            if (response.status === 200 || response.status === 201) {
+                await storage.markAsSynchronizedMedia(data.code);
+
+                return {
+                    success: true,
+                    message: "Midias Sincronizadas Com Sucesso",
+                    data: null
+                };
+            } else {
+                return {
+                    success: false,
+                    message: "Erro na resposta da API",
+                    data: null
+                };
+            }
+
+        } catch (error: any) {
+            console.error('Erro ao Sincronizar Pontuação:', error);
+            return {
+                success: false,
+                message: error?.message || 'Erro ao Sincronizar Pontuação',
+                data: null,
+            };
+        }
+    }
+
     async getAllFishRecord(): Promise<ControllerResponse> {
         try {
             const storage = await this.getStorage();
@@ -275,6 +366,26 @@ export class FishRecordService {
             return {
                 success: false,
                 message: error?.message || 'Erro ao iniciar sincronização',
+                data: null,
+            };
+        }
+    }
+
+    async trySyncAllMedia(): Promise<ControllerResponse> {
+        try {
+            await syncService.trySyncPendingMedias();
+
+            return {
+                success: true,
+                message: "Sincronização de midias iniciada",
+                data: null,
+            };
+
+        } catch (error: any) {
+            console.error('Erro ao iniciar sincronização de midias:', error);
+            return {
+                success: false,
+                message: error?.message || 'Erro ao iniciar sincronização midias',
                 data: null,
             };
         }

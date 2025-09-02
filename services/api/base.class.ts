@@ -24,12 +24,12 @@ export abstract class APIBase {
         return await this.request('POST', formData)
     }
 
-    public async enviarMidias(path: string, record: FishRecord): Promise<AxiosResponse> {
+    public async enviarMidias(record: FishRecord): Promise<AxiosResponse> {
 
-        this.path = path
+        this.path = "fish_catch/media/"
 
         const formData = new FormData()
-
+        formData.append("code", record.code);
         const formDataKeys = ["card_image", "fish_image", "fish_video"]
 
         for (const key of formDataKeys) {
@@ -100,7 +100,7 @@ export abstract class APIBase {
         }
     }
 
-    private async requestMedia(method: 'POST' | 'GET', formData?: FormData | null): Promise<AxiosResponse> {
+    private async requestMedia(method: 'POST' | 'GET', formData?: any | null): Promise<AxiosResponse> {
         try {
             const token = await this.getToken();
             console.log("token: ", token);
@@ -120,7 +120,17 @@ export abstract class APIBase {
                         'Content-Type': 'multipart/form-data',
 
                     },
-                    formData)
+                    formData._parts.map(([name, value]: any) => {
+                        return typeof value === 'string'
+                            ? { name, data: value }
+                            : {
+                                name,
+                                filename: value.name,
+                                type: value.type,
+                                data: RNFetchBlob.wrap(value.uri.replace('file://', ''))
+                            };
+                    })
+                )
                 console.log("response: ", response);
                 if (response.info().status >= 400) {
                     throw new Error(`Erro ${response.info().status}: ${await response.text()}`);

@@ -57,4 +57,8 @@ export const recordListStyles = StyleSheet.create({
         textAlign: 'center',
     },
 
+       buttonIcon: {
+        marginRight: 8
+    },
+
 });

@@ -57,8 +57,6 @@ export default function RecordFishList() {
         setLoading(true);
         try {
             const result = await fishRecordService.getAllFishRecord();
-            console.log("result: ", result);
-
             if (!isMounted.current) return;
 
             if (!result.success) {
@@ -103,7 +101,7 @@ export default function RecordFishList() {
                 throw new Error(result.message || "Erro na sincronização");
             }
 
-
+            loadFishRecords();
 
         } catch (error: any) {
             console.error("Erro na sincronização:", error);
@@ -122,29 +120,9 @@ export default function RecordFishList() {
 
     const synchronizeAllFishRecord = async () => {
         try {
-            // Filtra apenas registros não sincronizados
-            const pendingSync = fishRecordList?.filter(item => !item.synchronizedData) || [];
-
-            if (pendingSync.length === 0) {
-                await storeLastSync()
-                setLastSync(new Date().toLocaleString())
-                Alert.alert("Sem Pendencias", "Todas as Pontuação foram sicronizadas!")
-                return;
-            }
-
             setLoading(true);
-
-
-            // Sincronização sequencial com feedback
-            for (const [index, record] of pendingSync.entries()) {
-                try {
-                    await synchronizeFishRecord(record);
-
-                } catch (error) {
-                    console.warn(`Falha no registro ${record.code}:`, error);
-                    // Continua para o próximo mesmo com erro
-                }
-            }
+            const result = await fishRecordService.trySyncAllPending()
+            console.log(result);
 
         } catch (error) {
             console.error("Erro geral:", error);
@@ -152,6 +130,11 @@ export default function RecordFishList() {
             setLoading(false);
             await storeLastSync()
             setLastSync(new Date().toLocaleString())
+            Alert.alert(
+                "Sincrozinação realizada com Sucesso!",
+                "Caso alguma pontuação não tenha sincroniado tente novamente mais tarde!",
+                [{ text: "OK", onPress: () => loadFishRecords() }]
+            );
         }
     };
 
@@ -185,15 +168,124 @@ export default function RecordFishList() {
 
     }
 
+    const synchronizeAllFishRecordMidia = async () => {
+        try {
+            setLoading(true);
+            const result = await fishRecordService.trySyncAllMedia()
+            console.log(result);
+
+        } catch (error) {
+            console.error("Erro geral:", error);
+        } finally {
+            setLoading(false);
+            await storeLastSync()
+            setLastSync(new Date().toLocaleString())
+            Alert.alert(
+                "Sincrozinação realizada com Sucesso!",
+                "Caso alguma pontuação não tenha sincroniado tente novamente mais tarde!",
+                [{ text: "OK", onPress: () => loadFishRecords() }]
+            );
+        }
+    };
+
+    const sincronizarMidia = async (item: FishRecord) => {
+        try {
+            setLoading(true);
+            const response = await fishRecordService.synchronizeFishRecordMedia(item)
+            console.log(response);
+            if (!response.success) {
+                throw new Error(response.message || "Erro na sincronização")
+
+            }
+            Alert.alert(
+                "Sincrozinação realizada com Sucesso!",
+                "Midias Sincronizadas com Sucesso!"
+            );
+            loadFishRecords();
+            return
+
+
+        } catch (error) {
+            console.error("Erro geral:", error);
+            Alert.alert(
+                "Erro na Sinconização",
+                "Ocorreu Algum erro na sincronização. Tente novamente mais tarde!",
+                [{ text: "OK" }]
+            );
+
+        } finally {
+            setLoading(false);
+        }
+
+
+    }
+
+    const sincronizarMidiasAlert = (item?: FishRecord) => {
+        try {
+            console.log("item: ", item);
+
+            if (item && !item.synchronizedData) {
+                Alert.alert(
+                    "Dados Não Sincronizados!",
+                    "Sincronize os dados desta da pontuação primeiro!",
+                    [{ text: "OK" }]
+                );
+                return
+            }
+            if (item?.synchronizedMedia) {
+                Alert.alert(
+                    "Midias já sincronizadas",
+                    "As midias deste registro já foi sincronizado com o servidor.",
+                    [{ text: "OK", onPress: () => setShowModal(false) }]
+                );
+                return;
+            }
+
+            Alert.alert(
+                "Atenção!",
+                "A sincronização das mídias com o servidor pode levar mais tempo do que o esperado. Deseja continuar mesmo assim?",
+                [{
+                    text: "Sincronizar", onPress: () => {
+                        item ? sincronizarMidia(item) : synchronizeAllFishRecordMidia()
+                        setShowModal(false)
+                        return
+                    }
+                },
+                {
+                    text: "Fechar", onPress: () => {
+                        setShowModal(false)
+                        return
+                    }
+                }]
+            );
+
+        } catch (error) {
+            console.error("Erro ao Sincronizar Midias:", error);
+            Alert.alert('Erro na Sincronização', 'Falha ao Sincronizar midias dessa pontuação! Tente Novamente mais tarde!');
+            return;
+        }
+    }
+
     return (
         <View style={recordListStyles.container}>
+            <TouchableOpacity
+                style={{
+                    width: 150, flexDirection: 'row', padding: 5, alignItems: 'center',
+                    borderWidth: 1, borderColor: COLORS.primary, borderRadius: 12,
+                    marginLeft: 12
+                }}
+                onPress={() => sincronizarMidiasAlert()}
+            >
+                <Ionicons name="sync" size={26} color={COLORS.primary} style={recordListStyles.buttonIcon} />
+                <Text style={{ fontSize: 12, color: COLORS.primary }} >Sincronizar Midias</Text>
+            </TouchableOpacity>
             <ScrollView
                 showsVerticalScrollIndicator={false}
                 contentContainerStyle={recordListStyles.scrollContent}
             >
                 {fishRecord && <ModalViewScore fishRecord={fishRecord} setShowModal={setShowModal} showModal={showModal}
                     handleConfirmSubmit={synchronizeFishRecord} qrRef={qrRef}
-                    textButtonPrimary='Imprimir Comprovante' handleButtonPrimary={print} />}
+                    textButtonPrimary='Imprimir Comprovante' handleButtonPrimary={print} textButtonSecundary='Sincronizar Midias' handleButtonSecundary={sincronizarMidiasAlert} />}
                 <View style={recordListStyles.header}>
                     <Ionicons name="browsers" size={60} color="#FB4803" />
                     <Text style={recordListStyles.title}>Lista de Pontuação</Text>
