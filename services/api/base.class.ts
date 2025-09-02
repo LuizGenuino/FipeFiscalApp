@@ -56,9 +56,7 @@ export abstract class APIBase {
                     'Accept': 'application/json',
                     'Content-Type': 'application/json'
                 },
-                timeout: 60000,
-                maxBodyLength: Infinity,
-                maxContentLength: Infinity,
+                timeout: 120000,
             };
             console.log('config:', config);
             if (method === 'GET') {
@@ -110,7 +108,7 @@ export abstract class APIBase {
             if (method === 'POST' && formData) {
                 console.log("formData: ", formData);
                 const response = await RNFetchBlob.config({
-                    timeout: 60000 // 30 segundos
+                    timeout: 150000
                 }).fetch(
                     'POST',
                     url,
