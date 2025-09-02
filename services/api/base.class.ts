@@ -15,11 +15,11 @@ export abstract class APIBase {
         this.baseUrl = base
     }
 
-    public async enviarDados(path: string, record: FishRecord): Promise<AxiosResponse> {
+    public async enviarDados(record: FishRecord): Promise<AxiosResponse> {
 
-        this.path = path
+        this.path = "fish_catch/no-media/"
 
-        const formData: FormData = this.formDataRequest(record)
+        const formData = this.formatRequestBody(record)
 
         return await this.request('POST', formData)
     }
@@ -38,32 +38,77 @@ export abstract class APIBase {
             formData.append(key, fileObject as any);
         }
 
-        return await this.request('POST', formData)
+        return await this.requestMedia('POST', formData)
     }
 
-    protected abstract formDataRequest(record: FishRecord): FormData
+    protected abstract formatRequestBody(record: FishRecord): FormData | object
 
-
-    private async request(method: 'POST' | 'GET', formData?: FormData | null): Promise<AxiosResponse> {
+    private async request(method: 'POST' | 'GET', body?: FormData | object): Promise<AxiosResponse> {
         try {
             const token = await this.getToken();
+            console.log('token:', token);
+
             const url = `${this.baseUrl}/${this.path}`;
-
+            console.log('url:', url);
+            const config = {
+                headers: {
+                    // 'Authentication': token ? token : '',
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                },
+                timeout: 60000,
+                maxBodyLength: Infinity,
+                maxContentLength: Infinity,
+            };
+            console.log('config:', config);
             if (method === 'GET') {
-                const config = {
-                    headers: {
-                        'Authentication': token ? token : '',
-                        'Accept': 'application/json',
-                    },
-                    timeout: 60000,
-                    maxBodyLength: Infinity,
-                    maxContentLength: Infinity,
-                };
-
-                return await axios.get(url, config);
+                const response = await axios.get(url, config);
+                console.log('response:', response);
+                return response
             }
-            if (method === 'POST' && formData) {
+            if (method === 'POST' && typeof body === 'object') {
+                console.log('body:', body);
+                const response = await axios.post(url, body, config)
+                console.log('response:', response);
+                return response
 
+            } else {
+                throw new Error('Erro na montagem da requisição')
+            }
+
+        } catch (error: any) {
+            console.log("error: ", error);
+
+            const axiosError = error as AxiosError | any;
+            console.error("🔴 Erro detalhado:", {
+                message: axiosError.message,
+                code: axiosError.code,
+                response: axiosError.response?.data,
+                request: axiosError.request,
+            });
+
+            if (axiosError.response) {
+                // Erro do servidor (4xx, 5xx)
+                throw new Error(axiosError.response.data?.message || `Erro ${axiosError.response.status}`);
+            } else if (axiosError.request) {
+                // Requisição foi feita mas não houve resposta
+                throw new Error("Sem resposta do servidor. Verifique sua conexão.");
+            } else {
+                // Erro na configuração da requisição
+                throw new Error("Erro ao configurar a requisição.");
+            }
+        }
+    }
+
+    private async requestMedia(method: 'POST' | 'GET', formData?: FormData | null): Promise<AxiosResponse> {
+        try {
+            const token = await this.getToken();
+            console.log("token: ", token);
+            const url = `${this.baseUrl}/${this.path}`;
+            console.log("url: ", url);
+
+            if (method === 'POST' && formData) {
+                console.log("formData: ", formData);
                 const response = await RNFetchBlob.config({
                     timeout: 60000 // 30 segundos
                 }).fetch(
@@ -76,7 +121,7 @@ export abstract class APIBase {
 
                     },
                     formData)
-
+                console.log("response: ", response);
                 if (response.info().status >= 400) {
                     throw new Error(`Erro ${response.info().status}: ${await response.text()}`);
                 }

@@ -52,9 +52,9 @@ class SyncService {
                 try {
                     let response: any
                     if (record.modality === 'Barranco') {
-                        response = await ApiService.barranco.enviarDados('fish_catch', record)
+                        response = await ApiService.barranco.enviarDados(record)
                     } else {
-                        response = await ApiService.embarcada.enviarDados('fish_catch', record)
+                        response = await ApiService.embarcada.enviarDados(record)
                     }
 
                     if (response.status === 200 || response.status === 201) {
@@ -152,29 +152,7 @@ export class FishRecordService {
         try {
             const storage = await this.getStorage();
 
-            // Salva localmente primeiro
             await storage.setFishRecord(data);
-
-            // Tenta sincronizar imediatamente se online
-            const online = await isOnline();
-            if (online) {
-                try {
-                    let response: any
-                    if (data.modality === 'Barranco') {
-                        response = await ApiService.barranco.enviarDados('fish_catch', data)
-                    } else {
-                        response = await ApiService.embarcada.enviarDados('fish_catch', data)
-                    }
-
-                    if (response.status === 200 || response.status === 201) {
-                        await storage.markAsSynchronizedData(data.code);
-                        console.log("Registro sincronizado imediatamente");
-                    }
-                } catch (apiError) {
-                    console.warn('Falha na sincronização imediata, mantendo como pendente:', apiError);
-                    // Não lança erro - o registro ficará pendente para sincronização posterior
-                }
-            }
 
             return {
                 success: true,
@@ -192,6 +170,7 @@ export class FishRecordService {
         }
     }
 
+
     async synchronizeFishRecord(data: FishRecord): Promise<ControllerResponse> {
         data.size = +data.size;
 
@@ -208,9 +187,9 @@ export class FishRecordService {
             const storage = await this.getStorage();
             let response: any
             if (data.modality === 'Barranco') {
-                response = await ApiService.barranco.enviarDados('fish_catch', data)
+                response = await ApiService.barranco.enviarDados(data)
             } else {
-                response = await ApiService.embarcada.enviarDados('fish_catch', data)
+                response = await ApiService.embarcada.enviarDados(data)
             }
 
             if (response.status === 200 || response.status === 201) {

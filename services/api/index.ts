@@ -8,14 +8,15 @@ class BarrancoAPIService extends APIBase {
         super(API_BASE_URL_BARRANCO)
     }
 
-    protected formDataRequest(record: FishRecord): FormData {
-        const formDataKeys = ["size", "code", "registered_by", "card_number", "team"]
-        const formData = new FormData()
-        formDataKeys.forEach((key: String) => {
-            formData.append(key === 'team' ? "code_competidor" : key as string, String(record[key as keyof FishRecord]))
-        })
+    protected formatRequestBody(record: FishRecord): object {
+        const formDataKeys = ["code", "card_number", "registered_by", "size", "team"] as const // com o 'as const' eu defino o meu array com esse itens especificos e nao um array com string qualquer
+        type FormDataKeys = typeof formDataKeys[number]; // ao usar o [number] eu pego a união do array, ou seja, 'code' | 'card_number' | ....
+        const data: Partial<Record<FormDataKeys, any>> = {}; //crio um objeto do tipo Record mas com as chaves do FormDataKeys e valores any <chave, valor>
+        formDataKeys.forEach((key) => {
+            data[key] = record[key];
+        });
 
-        return formData
+        return data
     }
 }
 
@@ -24,14 +25,19 @@ class EmbarcadaAPIService extends APIBase {
         super(API_BASE_URL_EMBARCADA)
     }
 
-    protected formDataRequest(record: FishRecord): FormData {
-        const formDataKeys = ["size", "code", "latitude", "longitude", "registered_by", "card_number", "team", "species_id"]
-        const formData = new FormData()
-        formDataKeys.forEach((key: String) => {
-            formData.append(key as string, String(record[key as keyof FishRecord]))
-        })
+    protected formatRequestBody(record: FishRecord): object {
+        const formDataKeys = ["code", "card_number", "team", "size", "registered_by", "species_id", "latitude", "longitude"] as const
+        type FormDataKeys = typeof formDataKeys[number];
+        const data: Partial<Record<FormDataKeys, any>> = {}; //crio um objeto do tipo Record mas com as chaves do FormDataKeys e valores any <chave, valor>
+        formDataKeys.forEach((key) => {
+            if (key === 'latitude' || key === 'longitude') {
+                data[key] = record[key]?.toString()
+            } else {
+                data[key] = record[key];
+            }
+        });
 
-        return formData
+        return data
     }
 }
 

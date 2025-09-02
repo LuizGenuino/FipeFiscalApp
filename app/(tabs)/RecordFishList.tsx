@@ -32,7 +32,7 @@ export default function RecordFishList() {
     const router = useRouter();
     const fishRecordService = new FishRecordService()
     const [fishRecordList, setFishRecordList] = useState<FishRecord[]>()
-    const [fishRecord, setFishRecord] = useState<FishRecord>()
+    const [fishRecord, setFishRecord] = useState<FishRecord | null>()
     const [showModal, setShowModal] = useState<boolean>(false)
     const { setLoading } = useLoading();
     const { setLastSync } = useConnection();
@@ -45,6 +45,8 @@ export default function RecordFishList() {
 
             return () => {
                 isMounted.current = false;
+                setFishRecordList([])
+                setFishRecord(null)
             };
         }, [])
     );

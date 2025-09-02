@@ -231,22 +231,25 @@ export default function RegisterScore() {
             fish_video: fish_video_uri
         }));
 
-        const result = await new FishRecordService().setFishRecord({
+        const data = {
             ...fishRecord,
             fish_image: fish_image_uri,
             card_image: card_image_uri,
             fish_video: fish_video_uri
-        });
+        }
+
+        await new FishRecordService().setFishRecord(data);
 
         setLoading(false);
-
-
         setShowConfirmModal(false);
+
         await handlePrint();
+
         Alert.alert('Sucesso', 'Registro enviado com sucesso!', [
             { text: 'OK', onPress: () => router.back() },
         ]);
 
+        await new FishRecordService().synchronizeFishRecord(data);
     };
 
     const saveMediaLocally = async (fileName: string, currentPath: string) => {
