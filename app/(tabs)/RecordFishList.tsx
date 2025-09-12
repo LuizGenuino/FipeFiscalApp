@@ -285,7 +285,7 @@ export default function RecordFishList() {
             >
                 {fishRecord && <ModalViewScore fishRecord={fishRecord} setShowModal={setShowModal} showModal={showModal}
                     handleConfirmSubmit={synchronizeFishRecord} qrRef={qrRef}
-                    textButtonPrimary='Imprimir Comprovante' handleButtonPrimary={print} textButtonSecundary='Sincronizar Midias' handleButtonSecundary={sincronizarMidiasAlert} />}
+                    textButtonPrimary='Imprimir Comprovante' handleButtonPrimary={print} />}
                 <View style={recordListStyles.header}>
                     <Ionicons name="browsers" size={60} color="#FB4803" />
                     <Text style={recordListStyles.title}>Lista de Pontuação</Text>

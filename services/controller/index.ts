@@ -392,5 +392,5 @@ export class FishRecordService {
     }
 }
 
-// Sincronização periódica a cada 5 minutos
+// Sincronização periódica a cada 10 minutos
 setInterval(() => syncService.trySyncPendingRecords(), 10 * 60 * 1000);
